@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -10,12 +12,12 @@ export default function Home() {
           <p className="text-xl text-zinc-700 dark:text-zinc-200 font-medium drop-shadow">
             Never forget another birthday
           </p>
-          <a
-            href="#get-started"
+          <Link
+            href="/register"
             className="mt-6 px-10 py-4 rounded-full bg-foreground text-background font-semibold text-xl shadow-lg transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
           >
             Get started
-          </a>
+          </Link>
         </section>
 
         {/* Info Section */}
