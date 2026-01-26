@@ -4,14 +4,16 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-start py-0 px-8 bg-white dark:bg-black sm:items-start">
-        {/* Hero Section with gradient background */}
-        <section className="flex flex-col items-center justify-center gap-6 my-16 w-full min-h-[50vh] rounded-3xl bg-linear-to-r from-pink-700 via-sky-400 to-orange-300">
-          <h1 className="text-5xl font-extrabold text-black dark:text-zinc-50 drop-shadow-lg">
-            Birthday Ping
-          </h1>
-          <p className="text-xl text-zinc-700 dark:text-zinc-200 font-medium drop-shadow">
-            Never forget another birthday
-          </p>
+        {/* Hero Section */}
+        <section className="px-8 flex flex-col items-start justify-center gap-6 my-16 w-full min-h-[50vh] rounded-3xl">
+          <div className="flex flex-col gap-3">
+            <h1 className="text-7xl font-extrabold bg-linear-to-r from-pink-700 via-sky-400 to-orange-300 bg-clip-text text-transparent drop-shadow-lg">
+              Birthday Ping
+            </h1>
+            <p className="text-xl text-zinc-700 dark:text-zinc-200 font-medium drop-shadow">
+              Never forget another birthday
+            </p>
+          </div>
           <Link
             href="/register"
             className="mt-6 px-10 py-4 rounded-full bg-foreground text-background font-semibold text-xl shadow-lg transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
