@@ -1,5 +1,7 @@
+"use client";
 import React, { useState } from "react";
 import { Reminder } from "@/app/types";
+import { submitReminder } from "../dashboard/actions";
 
 interface AddReminderFormProps {
   onAdd: (reminder: Reminder) => void;
@@ -20,8 +22,13 @@ function AddReminderForm({ onAdd }: AddReminderFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center">
+    <form
+      action={submitReminder}
+      method="post"
+      className="flex flex-col gap-4 items-center"
+    >
       <input
+        name="name"
         type="text"
         placeholder="Name"
         value={newReminder.name}
@@ -32,6 +39,7 @@ function AddReminderForm({ onAdd }: AddReminderFormProps) {
         required
       />
       <input
+        name="date"
         type="date"
         value={newReminder.date}
         onChange={(e) =>
