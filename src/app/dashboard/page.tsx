@@ -41,6 +41,29 @@ export default function DashboardPage() {
     ]);
   }
 
+  async function handleSendSummary() {
+    if (!session?.user?.email) return;
+    const summary =
+      reminders.length === 0
+        ? "No reminders yet."
+        : reminders.map((r) => `- ${r.name} on ${r.date}`).join("\n");
+    const res = await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: session.user.email,
+        subject: "Your Birthday Reminders Summary",
+        text: summary,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Summary sent!");
+    } else {
+      alert("Error: " + (data.error || "Failed to send email."));
+    }
+  }
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
@@ -57,6 +80,12 @@ export default function DashboardPage() {
             ))
           )}
         </ul>
+        <button
+          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          onClick={handleSendSummary}
+        >
+          Send Reminders Summary
+        </button>
         <AddReminderForm onAdd={handleAddReminder} />
       </div>
     </main>
