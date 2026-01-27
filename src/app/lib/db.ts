@@ -16,6 +16,7 @@ if (!global._mongoClientPromise) {
 }
 
 const clientPromise: Promise<MongoClient> = global._mongoClientPromise;
+export { clientPromise };
 
 export async function addReminder(reminder: CreateReminder) {
   try {

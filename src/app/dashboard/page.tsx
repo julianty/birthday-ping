@@ -1,17 +1,20 @@
 // import { useSession } from "next-auth/react";
 // import { useState } from "react";
 import AddReminderForm from "../components/add-reminder-form";
-import { Reminder } from "../types";
-import { getServerSession } from "next-auth";
 import { getReminders } from "@/app/lib/db";
+import { signOut } from "next-auth/react";
+import SignOutButton from "../components/sign-out-button";
+import { auth } from "../auth";
+
 export default async function DashboardPage() {
-  const session = await getServerSession();
+  const session = await auth();
 
   if (!session) {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen">
         <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
         <p className="mb-6">You must be signed in to view your reminders.</p>
+        <SignOutButton />
       </main>
     );
   }
@@ -75,6 +78,7 @@ export default async function DashboardPage() {
         </button>
         <AddReminderForm />
       </div>
+      <SignOutButton />
     </main>
   );
 }
