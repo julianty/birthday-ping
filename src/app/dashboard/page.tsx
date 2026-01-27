@@ -1,25 +1,10 @@
-"use client";
-
-import { useSession } from "next-auth/react";
-import { useState } from "react";
+// import { useSession } from "next-auth/react";
+// import { useState } from "react";
 import AddReminderForm from "../components/add-reminder-form";
 import { Reminder } from "../types";
-
-export default function DashboardPage() {
-  const { data: session, status } = useSession();
-  const [reminders, setReminders] = useState([
-    // Example reminders
-    { id: 1, name: "Alice's Birthday", date: "2026-02-14" },
-    { id: 2, name: "Bob's Birthday", date: "2026-03-01" },
-  ]);
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading...
-      </div>
-    );
-  }
+import { getServerSession } from "next-auth";
+export default async function DashboardPage() {
+  const session = await getServerSession();
 
   if (!session) {
     return (
@@ -30,39 +15,28 @@ export default function DashboardPage() {
     );
   }
 
-  function handleAddReminder(reminder: Reminder) {
-    setReminders([
-      ...reminders,
-      {
-        id: reminders.length + 1,
-        name: reminder.name,
-        date: reminder.date,
-      },
-    ]);
-  }
-
-  async function handleSendSummary() {
-    if (!session?.user?.email) return;
-    const summary =
-      reminders.length === 0
-        ? "No reminders yet."
-        : reminders.map((r) => `- ${r.name} on ${r.date}`).join("\n");
-    const res = await fetch("/api/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: session.user.email,
-        subject: "Your Birthday Reminders Summary",
-        text: summary,
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Summary sent!");
-    } else {
-      alert("Error: " + (data.error || "Failed to send email."));
-    }
-  }
+  // async function handleSendSummary() {
+  //   if (!session?.user?.email) return;
+  //   const summary =
+  //     reminders.length === 0
+  //       ? "No reminders yet."
+  //       : reminders.map((r) => `- ${r.name} on ${r.date}`).join("\n");
+  //   const res = await fetch("/api/send-email", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       to: session.user.email,
+  //       subject: "Your Birthday Reminders Summary",
+  //       text: summary,
+  //     }),
+  //   });
+  //   const data = await res.json();
+  //   if (data.success) {
+  //     alert("Summary sent!");
+  //   } else {
+  //     alert("Error: " + (data.error || "Failed to send email."));
+  //   }
+  // }
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
@@ -82,11 +56,11 @@ export default function DashboardPage() {
         </ul>
         <button
           className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          onClick={handleSendSummary}
+          // onClick={handleSendSummary}
         >
           Send Reminders Summary
         </button>
-        <AddReminderForm onAdd={handleAddReminder} />
+        <AddReminderForm />
       </div>
     </main>
   );

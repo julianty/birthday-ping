@@ -3,11 +3,7 @@ import React, { useState } from "react";
 import { Reminder } from "@/app/types";
 import { submitReminder } from "../dashboard/actions";
 
-interface AddReminderFormProps {
-  onAdd: (reminder: Reminder) => void;
-}
-
-function AddReminderForm({ onAdd }: AddReminderFormProps) {
+function AddReminderForm() {
   const [newReminder, setNewReminder] = useState<Reminder>({
     id: 1,
     name: "",
