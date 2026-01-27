@@ -1,7 +1,9 @@
 import { MongoClient } from "mongodb";
 import { Reminder } from "@/app/types";
+import type { CreateReminder } from "@/app/schemas/reminder.schema";
+import * as z from "zod";
 
-export async function addReminder(reminder: Omit<Reminder, "id">) {
+export async function addReminder(reminder: CreateReminder) {
   const uri = process.env.MONGO_DB_CONNECTION_STRING!;
   if (!uri)
     throw new Error("MONGO_DB_CONNECTION_STRING env variable not configured");
