@@ -14,13 +14,6 @@ function AddReminderForm({ onAdd }: AddReminderFormProps) {
     date: "",
   });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newReminder.name || !newReminder.date) return;
-    onAdd({ id: 0, name: newReminder.name, date: newReminder.date });
-    setNewReminder({ id: 0, name: "", date: "" });
-  }
-
   return (
     <form
       action={submitReminder}
