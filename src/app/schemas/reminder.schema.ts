@@ -10,3 +10,7 @@ export const UpdateReminderSchema = CreateReminderSchema.partial();
 export const ReminderDBSchema = CreateReminderSchema.extend({
   _id: z.string(),
 });
+
+export type CreateReminder = z.infer<typeof CreateReminderSchema>;
+export type UpdateReminder = z.infer<typeof UpdateReminderSchema>;
+export type ReminderDBSchema = z.infer<typeof ReminderDBSchema>;
