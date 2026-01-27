@@ -13,7 +13,7 @@ function AddReminderForm() {
   return (
     <form
       action={submitReminder}
-      method="post"
+      method="POST"
       className="flex flex-col gap-4 items-center"
     >
       <input
