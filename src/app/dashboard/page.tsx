@@ -3,6 +3,7 @@
 import AddReminderForm from "../components/add-reminder-form";
 import { Reminder } from "../types";
 import { getServerSession } from "next-auth";
+import { getReminders } from "@/app/lib/db";
 export default async function DashboardPage() {
   const session = await getServerSession();
 
@@ -15,6 +16,18 @@ export default async function DashboardPage() {
     );
   }
 
+  if (!session.user?.email) {
+    return (
+      <main>
+        Something went wrong with your user information. Please contact support
+      </main>
+    );
+  }
+  const reminders = await getReminders(session.user?.email);
+
+  if (!reminders) {
+    return <main>Failed to fetch reminders from database</main>;
+  }
   // async function handleSendSummary() {
   //   if (!session?.user?.email) return;
   //   const summary =
