@@ -15,4 +15,4 @@ export const ReminderDBSchema = CreateReminderSchema.extend({
 
 export type CreateReminder = z.infer<typeof CreateReminderSchema>;
 export type UpdateReminder = z.infer<typeof UpdateReminderSchema>;
-export type ReminderDBSchema = z.infer<typeof ReminderDBSchema>;
+export type ReminderDB = z.infer<typeof ReminderDBSchema>;
