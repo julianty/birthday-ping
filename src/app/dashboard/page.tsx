@@ -2,9 +2,9 @@
 // import { useState } from "react";
 import AddReminderForm from "../components/add-reminder-form";
 import { getReminders } from "@/app/lib/db";
-import { signOut } from "next-auth/react";
 import SignOutButton from "../components/sign-out-button";
 import { auth } from "../auth";
+import { sendReminderEmail } from "../lib/email";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -31,29 +31,6 @@ export default async function DashboardPage() {
   if (!reminders) {
     return <main>Failed to fetch reminders from database</main>;
   }
-  // async function handleSendSummary() {
-  //   if (!session?.user?.email) return;
-  //   const summary =
-  //     reminders.length === 0
-  //       ? "No reminders yet."
-  //       : reminders.map((r) => `- ${r.name} on ${r.date}`).join("\n");
-  //   const res = await fetch("/api/send-email", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       to: session.user.email,
-  //       subject: "Your Birthday Reminders Summary",
-  //       text: summary,
-  //     }),
-  //   });
-  //   const data = await res.json();
-  //   if (data.success) {
-  //     alert("Summary sent!");
-  //   } else {
-  //     alert("Error: " + (data.error || "Failed to send email."));
-  //   }
-  // }
-
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
@@ -72,7 +49,7 @@ export default async function DashboardPage() {
         </ul>
         <button
           className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          // onClick={handleSendSummary}
+          // onClick={() =>sendReminderEmail(reminders)}
         >
           Send Reminders Summary
         </button>
