@@ -21,7 +21,7 @@ export { clientPromise };
 export async function addReminder(reminder: CreateReminder) {
   try {
     const client = await clientPromise;
-    const db = client.db("reminders");
+    const db = client.db("test");
     const testReminders = db.collection("test-reminders");
 
     const result = await testReminders.insertOne(reminder);
@@ -36,7 +36,7 @@ export async function addReminder(reminder: CreateReminder) {
 export async function getReminders(email: string) {
   try {
     const client = await clientPromise;
-    const db = client.db("reminders");
+    const db = client.db("test");
     const testReminders = db.collection("test-reminders");
 
     const result = await testReminders.find({
