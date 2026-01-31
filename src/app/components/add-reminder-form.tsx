@@ -6,15 +6,18 @@ import { useSession } from "next-auth/react";
 
 function AddReminderForm() {
   const { data: session, status } = useSession();
-  if (!session?.user?.email) {
-    throw Error("Error reading user information");
-  }
-  const [userEmail, _] = useState(session.user.email);
+  const [userEmail, setUserEmail] = useState<string | undefined>();
   const [newReminder, setNewReminder] = useState<Reminder>({
     id: 1,
     name: "",
     date: "",
   });
+
+  React.useEffect(() => {
+    if (status === "authenticated") {
+      setUserEmail(session?.user?.email ?? undefined);
+    }
+  }, [status, session]);
 
   return (
     <form
