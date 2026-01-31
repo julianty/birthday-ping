@@ -2,8 +2,14 @@
 import React, { useState } from "react";
 import { Reminder } from "@/app/types";
 import { submitReminder } from "../dashboard/actions";
+import { useSession } from "next-auth/react";
 
 function AddReminderForm() {
+  const { data: session, status } = useSession();
+  if (!session?.user?.email) {
+    throw Error("Error reading user information");
+  }
+  const [userEmail, _] = useState(session.user.email);
   const [newReminder, setNewReminder] = useState<Reminder>({
     id: 1,
     name: "",
@@ -16,6 +22,7 @@ function AddReminderForm() {
       method="POST"
       className="flex flex-col gap-4 items-center"
     >
+      <input name="email" value={userEmail} hidden />
       <input
         name="name"
         type="text"

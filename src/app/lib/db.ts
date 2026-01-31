@@ -2,6 +2,9 @@ import { MongoClient } from "mongodb";
 import { Reminder } from "@/app/types";
 import type { CreateReminder } from "@/app/schemas/reminder.schema";
 import * as z from "zod";
+import { CreateBirthday } from "../schemas/birthday.schema";
+import { UserDB } from "../schemas/user.schema";
+import { CreateSubscription } from "../schemas/subscription.schema";
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
@@ -44,6 +47,53 @@ export async function getReminders(email: string) {
     });
 
     return result.toArray();
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error(e.message);
+    }
+  }
+}
+
+export async function addSubscription(
+  userEmail: string,
+  birthdayData: CreateBirthday,
+) {
+  try {
+    // Connect to database
+    const client = await clientPromise;
+    const db = client.db("test");
+
+    // Find user in database
+    const users = db.collection("users");
+    const userDB: UserDB | null = await users.findOne<UserDB>({
+      email: userEmail,
+    });
+    if (!userDB) {
+      console.error(`User with email: ${userEmail} not found`);
+      return;
+    }
+    const userId = userDB._id;
+
+    // Add birthday to database
+    const birthdays = db.collection("birthdays");
+    const insertBirthdayResult = await birthdays.insertOne(birthdayData);
+    if (!insertBirthdayResult.acknowledged) {
+      console.error(`Error adding new birthday`);
+      return;
+    }
+    const birthdayId = insertBirthdayResult.insertedId;
+    // Add subscription to database
+    const subscriptions = db.collection("subscriptions");
+    const subscriptionData = {
+      userId,
+      birthdayId,
+    } satisfies CreateSubscription;
+    const insertSubscriptionResult =
+      await subscriptions.insertOne(subscriptionData);
+    if (!insertSubscriptionResult.acknowledged) {
+      console.error(`Error adding new subscription`);
+      return;
+    }
   } catch (e) {
     if (e instanceof Error) {
       console.error(e.message);
