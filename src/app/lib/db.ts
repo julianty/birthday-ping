@@ -56,7 +56,7 @@ export async function getReminders(email: string) {
 
 export async function addSubscription(
   userEmail: string,
-  birthdayData: CreateBirthday,
+  birthdayData: Omit<CreateBirthday, "createdBy">,
 ) {
   try {
     // Connect to database
@@ -76,7 +76,9 @@ export async function addSubscription(
 
     // Add birthday to database
     const birthdays = db.collection("birthdays");
-    const insertBirthdayResult = await birthdays.insertOne(birthdayData);
+    const completeBirthdayData = { ...birthdayData, createdBy: userId };
+    const insertBirthdayResult =
+      await birthdays.insertOne(completeBirthdayData);
     if (!insertBirthdayResult.acknowledged) {
       console.error(`Error adding new birthday`);
       return;

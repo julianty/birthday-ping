@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import * as z from "zod";
 
 export const CreateBirthdaySchema = z.object({
@@ -5,7 +6,7 @@ export const CreateBirthdaySchema = z.object({
   date: z.date(),
   month: z.int(),
   day: z.int(),
-  createdBy: z.string(),
+  createdBy: z.instanceof(ObjectId),
 });
 
 export type CreateBirthday = z.infer<typeof CreateBirthdaySchema>;
