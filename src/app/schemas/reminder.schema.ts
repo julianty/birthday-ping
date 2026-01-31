@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import * as z from "zod";
 
 export const CreateReminderSchema = z.object({
@@ -10,7 +11,7 @@ export const CreateReminderSchema = z.object({
 export const UpdateReminderSchema = CreateReminderSchema.partial();
 
 export const ReminderDBSchema = CreateReminderSchema.extend({
-  _id: z.string(),
+  _id: z.instanceof(ObjectId),
 });
 
 export type CreateReminder = z.infer<typeof CreateReminderSchema>;

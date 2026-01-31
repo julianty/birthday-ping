@@ -1,12 +1,13 @@
+import { ObjectId } from "mongodb";
 import * as z from "zod";
 
 export const CreateSubscriptionSchema = z.object({
-  userId: z.string(),
-  birthdayId: z.string(),
+  userId: z.instanceof(ObjectId),
+  birthdayId: z.instanceof(ObjectId),
 });
 
 export const SubscriptionDBSchema = CreateSubscriptionSchema.extend({
-  _id: z.string(),
+  _id: z.instanceof(ObjectId),
   createdAt: z.date(),
 });
 
