@@ -40,9 +40,9 @@ export default async function DashboardPage() {
             <li className="text-zinc-500">No reminders yet.</li>
           ) : (
             reminders.map((reminder) => (
-              <li key={reminder.id} className="mb-2">
+              <li key={reminder._id.toString()} className="mb-2">
                 <span className="font-semibold">{reminder.name}</span> —{" "}
-                <span>{reminder.date}</span>
+                <span>{reminder.date.toString()}</span>
               </li>
             ))
           )}
