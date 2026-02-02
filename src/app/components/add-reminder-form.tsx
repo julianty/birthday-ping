@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 
 function AddReminderForm() {
   const { data: session, status } = useSession();
-  const [userEmail, setUserEmail] = useState<string | undefined>();
+  const [userEmail, setUserEmail] = useState<string | undefined>("");
   const [newReminder, setNewReminder] = useState<Reminder>({
     id: 1,
     name: "",
@@ -25,7 +25,7 @@ function AddReminderForm() {
       method="POST"
       className="flex flex-col gap-4 items-center"
     >
-      <input name="email" value={userEmail} hidden />
+      <input name="email" value={userEmail} readOnly hidden />
       <input
         name="name"
         type="text"
