@@ -1,7 +1,5 @@
-import { MongoClient } from "mongodb";
-import { Reminder } from "@/app/types";
+import { MongoClient, ObjectId, WithId } from "mongodb";
 import type { CreateReminder } from "@/app/schemas/reminder.schema";
-import * as z from "zod";
 import { CreateBirthday } from "../schemas/birthday.schema";
 import { UserDB } from "../schemas/user.schema";
 import { CreateSubscription } from "../schemas/subscription.schema";
@@ -36,17 +34,33 @@ export async function addReminder(reminder: CreateReminder) {
   }
 }
 
-export async function getReminders(email: string) {
+export async function getReminders(userEmail: string) {
   try {
     const client = await clientPromise;
     const db = client.db("test");
-    const testReminders = db.collection("test-reminders");
-
-    const result = await testReminders.find({
-      email: email,
+    // Find user with email
+    const users = db.collection("users");
+    const findUser = await users.findOne({
+      email: userEmail,
     });
+    const userId = findUser?._id;
 
-    return result.toArray();
+    // Collect all user's subscriptions
+    const subscriptions = await db
+      .collection<{ birthdayId: ObjectId }>("subscriptions")
+      .find({ userId })
+      .toArray();
+
+    const birthdayIds = subscriptions.map((s) => s.birthdayId);
+    if (birthdayIds.length === 0) return [];
+
+    // Collect all birthdays
+    const birthdays = await db
+      .collection<WithId<CreateBirthday>>("birthdays")
+      .find({ _id: { $in: birthdayIds } })
+      .toArray();
+
+    return birthdays;
   } catch (e) {
     if (e instanceof Error) {
       console.error(e.message);
