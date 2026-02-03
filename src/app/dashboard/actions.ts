@@ -13,8 +13,10 @@ export async function submitReminder(formData: FormData) {
     console.error("Form data is not valid, name or date not submitted");
     return;
   }
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  const dateString = formData.get("date") as string;
+  console.log(dateString);
+  const month = Number(dateString.split("-")[1]);
+  const day = Number(dateString.split("-")[2]);
 
   const birthday = {
     name,
