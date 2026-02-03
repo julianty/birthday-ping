@@ -1,9 +1,8 @@
-// import { useSession } from "next-auth/react";
-// import { useState } from "react";
 import AddReminderForm from "@/app/components/dashboard/add-reminder-form";
 import { getReminders } from "@/app/lib/db";
 import SignOutButton from "../components/sign-out-button";
 import { auth } from "../auth";
+import SubscriptionDisplay from "../components/dashboard/subscription-display";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -33,19 +32,7 @@ export default async function DashboardPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
-        <h1 className="text-3xl font-bold mb-4">Your Reminders</h1>
-        <ul className="mb-6 text-left">
-          {birthdays.length === 0 ? (
-            <li className="text-zinc-500">No reminders yet.</li>
-          ) : (
-            birthdays.map((birthday) => (
-              <li key={birthday._id.toString()} className="mb-2">
-                <span className="font-semibold">{birthday.name}</span> —{" "}
-                <span>{`${birthday.month}/${birthday.day}/${birthday.date.getFullYear()}`}</span>
-              </li>
-            ))
-          )}
-        </ul>
+        <SubscriptionDisplay birthdays={birthdays} />
         <button
           className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
           // onClick={() =>sendReminderEmail(reminders)}
