@@ -42,7 +42,7 @@ export default async function DashboardPage() {
             reminders.map((reminder) => (
               <li key={reminder._id.toString()} className="mb-2">
                 <span className="font-semibold">{reminder.name}</span> —{" "}
-                <span>{reminder.date.toString()}</span>
+                <span>{`${reminder.month}/${reminder.day}/${reminder.date.getFullYear()}`}</span>
               </li>
             ))
           )}
