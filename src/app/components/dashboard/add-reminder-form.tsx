@@ -20,11 +20,7 @@ function AddReminderForm() {
   }, [status, session]);
 
   return (
-    <form
-      action={submitReminder}
-      method="POST"
-      className="flex flex-col gap-4 items-center"
-    >
+    <form action={submitReminder} className="flex flex-col gap-4 items-center">
       <input name="email" value={userEmail} readOnly hidden />
       <input
         name="name"
