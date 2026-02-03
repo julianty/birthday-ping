@@ -1,10 +1,9 @@
 // import { useSession } from "next-auth/react";
 // import { useState } from "react";
-import AddReminderForm from "../components/add-reminder-form";
+import AddReminderForm from "@/app/components/dashboard/add-reminder-form";
 import { getReminders } from "@/app/lib/db";
 import SignOutButton from "../components/sign-out-button";
 import { auth } from "../auth";
-import { sendReminderEmail } from "../lib/email";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -26,9 +25,9 @@ export default async function DashboardPage() {
       </main>
     );
   }
-  const reminders = await getReminders(session.user?.email);
+  const birthdays = await getReminders(session.user?.email);
 
-  if (!reminders) {
+  if (!birthdays) {
     return <main>Failed to fetch reminders from database</main>;
   }
   return (
@@ -36,13 +35,13 @@ export default async function DashboardPage() {
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
         <h1 className="text-3xl font-bold mb-4">Your Reminders</h1>
         <ul className="mb-6 text-left">
-          {reminders.length === 0 ? (
+          {birthdays.length === 0 ? (
             <li className="text-zinc-500">No reminders yet.</li>
           ) : (
-            reminders.map((reminder) => (
-              <li key={reminder._id.toString()} className="mb-2">
-                <span className="font-semibold">{reminder.name}</span> —{" "}
-                <span>{`${reminder.month}/${reminder.day}/${reminder.date.getFullYear()}`}</span>
+            birthdays.map((birthday) => (
+              <li key={birthday._id.toString()} className="mb-2">
+                <span className="font-semibold">{birthday.name}</span> —{" "}
+                <span>{`${birthday.month}/${birthday.day}/${birthday.date.getFullYear()}`}</span>
               </li>
             ))
           )}
