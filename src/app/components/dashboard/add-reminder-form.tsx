@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Reminder } from "@/app/types";
-import { submitReminder } from "../dashboard/actions";
+import { submitReminder } from "@/app/dashboard/actions";
 import { useSession } from "next-auth/react";
 
 function AddReminderForm() {
