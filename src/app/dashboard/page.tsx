@@ -39,7 +39,7 @@ export default async function DashboardPage() {
         >
           Send Reminders Summary
         </button>
-        <AddReminderForm />
+        <AddReminderForm key={`v=${birthdays.length}`} />
       </div>
       <SignOutButton />
     </main>
