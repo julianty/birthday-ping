@@ -3,6 +3,7 @@
 import { addSubscription } from "../lib/db";
 import * as z from "zod";
 import { CreateBirthdaySchema } from "../schemas/birthday.schema";
+import { revalidatePath } from "next/cache";
 
 export async function submitReminder(formData: FormData) {
   // Read in form data
@@ -31,4 +32,5 @@ export async function submitReminder(formData: FormData) {
 
   if (!validated.success) throw new Error("Invalid birthday");
   await addSubscription(userEmail, validated.data);
+  revalidatePath("/dashboard");
 }
