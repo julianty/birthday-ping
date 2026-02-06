@@ -88,9 +88,7 @@ export async function PATCH(
     // Log full error server-side for easier debugging
     console.error("PATCH /api/birthdays/[id] error:", e);
     if (e instanceof Error) {
-      const payload: any = { error: e.message };
-      if (process.env.NODE_ENV !== "production") payload.stack = e.stack;
-      return new Response(JSON.stringify(payload), { status: 500 });
+      return new Response(JSON.stringify(e.message), { status: 500 });
     }
     return new Response(JSON.stringify({ error: "Unknown error" }), {
       status: 500,
