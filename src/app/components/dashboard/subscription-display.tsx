@@ -15,14 +15,7 @@ function SubscriptionDisplay({ birthdays }: SubscriptionDisplayProps) {
           <li className="text-zinc-500">No reminders yet.</li>
         ) : (
           birthdays.map((birthday) => (
-            <BirthdayItem
-              key={birthday._id.toString()}
-              id={birthday._id.toString()}
-              name={birthday.name}
-              month={birthday.month}
-              year={birthday.date.getFullYear()}
-              day={birthday.day}
-            />
+            <BirthdayItem key={birthday._id.toString()} birthday={birthday} />
           ))
         )}
       </ul>

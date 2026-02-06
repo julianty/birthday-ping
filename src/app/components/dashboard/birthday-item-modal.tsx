@@ -1,17 +1,18 @@
 "use client";
+import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
 import React from "react";
 import { createPortal } from "react-dom";
 
 interface BirthdayItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  birthday: BirthdayPlainObject;
 }
 
 function BirthdayItemModal({
   isOpen,
   onClose,
-  children,
+  birthday,
 }: BirthdayItemModalProps) {
   if (!isOpen) return null;
   return createPortal(
@@ -23,7 +24,7 @@ function BirthdayItemModal({
       }}
     >
       <button onClick={onClose}>x</button>
-      {children}
+      <pre>{JSON.stringify(birthday)}</pre>
     </div>,
     document.body,
   );

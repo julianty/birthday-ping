@@ -1,33 +1,31 @@
 "use client";
 import { useEffect, useState } from "react";
 import BirthdayItemModal from "./birthday-item-modal";
+import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
+import { id } from "zod/locales";
 
 interface BirthdayItemProps {
-  id: string;
-  name: string;
-  month: number;
-  day: number;
-  year: number;
+  birthday: BirthdayPlainObject;
 }
 
-function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
+function BirthdayItem({ birthday }: BirthdayItemProps) {
   const [editMode, setEditMode] = useState(false);
-  const [nameState, setNameState] = useState(name);
+  const [nameState, setNameState] = useState(birthday.name);
   const [dateState, setDateState] = useState(() => {
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${year}-${pad(month)}-${pad(day)}`;
+    return `${birthday.date.getFullYear()}-${pad(birthday.month)}-${pad(birthday.day)}`;
   });
   const [saving, setSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debounced save for name
   useEffect(() => {
-    if (nameState === name) return;
+    if (nameState === birthday.name) return;
     const controller = new AbortController();
     const timeoutId = setTimeout(async () => {
       setSaving(true);
       try {
-        await fetch(`/api/birthdays/${id}`, {
+        await fetch(`/api/birthdays/${birthday._id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: nameState }),
@@ -45,17 +43,17 @@ function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [nameState, id, name]);
+  }, [nameState, birthday]);
 
   // Debounced save for date
   useEffect(() => {
-    const initialDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const initialDate = `${birthday.date.getFullYear()}-${String(birthday.month).padStart(2, "0")}-${String(birthday.day).padStart(2, "0")}`;
     if (dateState === initialDate) return;
     const controller = new AbortController();
     const timeoutId = setTimeout(async () => {
       setSaving(true);
       try {
-        await fetch(`/api/birthdays/${id}`, {
+        await fetch(`/api/birthdays/${birthday._id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ date: dateState }),
@@ -73,12 +71,12 @@ function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [dateState, id, month, day, year]);
+  }, [dateState, birthday]);
 
   function finishEdit() {
     setEditMode(false);
     // ensure immediate save on blur: send a final PATCH
-    fetch(`/api/birthdays/${id}`, {
+    fetch(`/api/birthdays/${birthday._id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: nameState, date: dateState }),
@@ -92,13 +90,12 @@ function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
       {!editMode ? (
         <div onClick={() => setIsModalOpen(true)}>
           <span className="font-semibold">{nameState}</span> —{" "}
-          <span>{`${month}/${day}/${year}`}</span>
+          <span>{`${birthday.month}/${birthday.day}/${birthday.date.getFullYear()}`}</span>
           <BirthdayItemModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-          >
-            modal
-          </BirthdayItemModal>
+            birthday={birthday}
+          />
         </div>
       ) : (
         <form
