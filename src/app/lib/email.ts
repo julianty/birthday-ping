@@ -1,9 +1,9 @@
 "use server";
 
-import type { ReminderDB } from "../schemas/reminder.schema";
+import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import { auth } from "@/app/auth";
 
-export async function sendReminderEmail(reminders: ReminderDB[]) {
+export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
   const session = await auth();
   if (!session?.user?.email) throw new Error("No user email");
 
@@ -14,7 +14,7 @@ export async function sendReminderEmail(reminders: ReminderDB[]) {
   const body = {
     to: session.user.email,
     subject: "Here are all of the birthdays associated with your account!",
-    text: reminders.map((r) => `${r.name}: ${r.date}`).join("\n"),
+    text: birthdays.map((r) => `${r.name}: ${r.date}`).join("\n"),
   };
 
   // Build an absolute URL for the internal API route to avoid issues when

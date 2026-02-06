@@ -1,8 +1,8 @@
-import { BirthdayDB } from "@/app/schemas/birthday.schema";
+import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
 import React from "react";
 
 interface SubscriptionDisplayProps {
-  birthdays: BirthdayDB[];
+  birthdays: BirthdayPlainObject[];
 }
 
 function SubscriptionDisplay({ birthdays }: SubscriptionDisplayProps) {
