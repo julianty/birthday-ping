@@ -13,5 +13,8 @@ export const BirthdayDBSchema = CreateBirthdaySchema.extend({
   _id: z.instanceof(ObjectId),
 });
 
+export const UpdateBirthdaySchema = CreateBirthdaySchema.partial();
+
 export type CreateBirthday = z.infer<typeof CreateBirthdaySchema>;
 export type BirthdayDB = z.infer<typeof BirthdayDBSchema>;
+export type UpdateBirthday = z.infer<typeof UpdateBirthdaySchema>;

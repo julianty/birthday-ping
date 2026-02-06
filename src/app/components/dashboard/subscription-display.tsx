@@ -1,5 +1,6 @@
 import { BirthdayDB } from "@/app/schemas/birthday.schema";
 import React from "react";
+import BirthdayItem from "./birthday-item";
 
 interface SubscriptionDisplayProps {
   birthdays: BirthdayDB[];
@@ -14,10 +15,14 @@ function SubscriptionDisplay({ birthdays }: SubscriptionDisplayProps) {
           <li className="text-zinc-500">No reminders yet.</li>
         ) : (
           birthdays.map((birthday) => (
-            <li key={birthday._id.toString()} className="mb-2">
-              <span className="font-semibold">{birthday.name}</span> —{" "}
-              <span>{`${birthday.month}/${birthday.day}/${birthday.date.getFullYear()}`}</span>
-            </li>
+            <BirthdayItem
+              key={birthday._id.toString()}
+              id={birthday._id.toString()}
+              name={birthday.name}
+              month={birthday.month}
+              year={birthday.date.getFullYear()}
+              day={birthday.day}
+            />
           ))
         )}
       </ul>
