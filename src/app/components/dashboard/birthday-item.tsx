@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import BirthdayItemModal from "./birthday-item-modal";
 
 interface BirthdayItemProps {
   id: string;
@@ -17,6 +18,7 @@ function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
     return `${year}-${pad(month)}-${pad(day)}`;
   });
   const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debounced save for name
   useEffect(() => {
@@ -88,9 +90,15 @@ function BirthdayItem({ id, name, month, day, year }: BirthdayItemProps) {
   return (
     <li className="mb-2">
       {!editMode ? (
-        <div onClick={() => setEditMode(true)}>
+        <div onClick={() => setIsModalOpen(true)}>
           <span className="font-semibold">{nameState}</span> —{" "}
           <span>{`${month}/${day}/${year}`}</span>
+          <BirthdayItemModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          >
+            modal
+          </BirthdayItemModal>
         </div>
       ) : (
         <form
