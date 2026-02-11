@@ -1,6 +1,10 @@
 import { MongoClient, ObjectId, WithId } from "mongodb";
 import type { CreateReminder } from "@/app/schemas/reminder.schema";
-import { CreateBirthday } from "../schemas/birthday.schema";
+import {
+  CreateBirthday,
+  UpdateBirthday,
+  BirthdayDB,
+} from "../schemas/birthday.schema";
 import { UserDB } from "../schemas/user.schema";
 import { CreateSubscription } from "../schemas/subscription.schema";
 
@@ -114,5 +118,41 @@ export async function addSubscription(
     if (e instanceof Error) {
       console.error(e.message);
     }
+  }
+}
+
+export async function deleteBirthday(id: string) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("test");
+    const birthdays = db.collection<BirthdayDB>("birthdays");
+
+    const oid = new ObjectId(id);
+    const result: BirthdayDB | null = await birthdays.findOneAndDelete({
+      _id: oid,
+    });
+    // result.value will be the deleted document or null
+    return result ?? null;
+  } catch (e) {
+    if (e instanceof Error) console.error(e.message);
+    throw e;
+  }
+}
+
+export async function updateBirthday(id: string, update: UpdateBirthday) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("test");
+    const birthdays = db.collection<BirthdayDB>("birthdays");
+
+    const result = await birthdays.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: update },
+      { returnDocument: "after" },
+    );
+    return result ?? null;
+  } catch (e) {
+    if (e instanceof Error) console.error(e.message);
+    throw e;
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
 
@@ -19,6 +20,7 @@ function BirthdayItemModal({
   const [name, setName] = React.useState("");
   const [date, setDate] = React.useState("");
   const [saving, setSaving] = React.useState(false);
+  const router = useRouter();
 
   // Have ui react to changes in birthday
   React.useEffect(() => {
@@ -106,6 +108,31 @@ function BirthdayItemModal({
       setSaving(false);
     }
   }
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!confirm("Delete this birthday? This action cannot be undone.")) return;
+    setSaving(true);
+    try {
+      const id = birthday._id;
+      const res = await fetch(`/api/birthdays/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("DELETE failed:", text);
+        alert("Failed to delete birthday");
+        return;
+      }
+      onClose();
+    } catch (err) {
+      console.error("Error deleting birthday:", err);
+      alert("Failed to delete birthday");
+    } finally {
+      setSaving(false);
+      router.refresh();
+    }
+  }
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 bg-black/40 backdrop-blur-sm"
@@ -143,21 +170,33 @@ function BirthdayItemModal({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              className="px-3 py-2 rounded bg-gray-200 dark:bg-zinc-700"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={`px-3 py-2 rounded bg-indigo-600 text-white ${saving ? "opacity-60 cursor-not-allowed" : "hover:bg-indigo-700"}`}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
+          <div className="flex justify-between items-center gap-2 pt-2">
+            <div>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={saving}
+                className={`px-3 py-2 rounded text-white bg-red-600 hover:bg-red-700 ${saving ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                Delete
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-gray-200 dark:bg-zinc-700"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`px-3 py-2 rounded bg-indigo-600 text-white ${saving ? "opacity-60 cursor-not-allowed" : "hover:bg-indigo-700"}`}
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

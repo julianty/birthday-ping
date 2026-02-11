@@ -46,11 +46,13 @@ export default async function DashboardPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
+        <div className="flex justify-end">
+          <SignOutButton />
+        </div>
         <SubscriptionDisplay birthdays={birthdaysPlainObject} />
         <SendSummaryButton birthdays={birthdaysPlainObject} />
         <AddReminderForm key={`v=${birthdays.length}`} />
       </div>
-      <SignOutButton />
     </main>
   );
 }

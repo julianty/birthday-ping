@@ -6,6 +6,9 @@
 
   --button: #cb4e06; /* default button background */
   --text-button: #ffffff; /* default button text */
+  --destructive: #dc2626; /* red-600 */
+  --destructive-hover: #b91c1c; /* red-700 */
+  --text-destructive: #ffffff;
 }
 
 @theme inline {
@@ -14,6 +17,9 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-button: var(--button);
+  --color-destructive: var(--color-red-600);
+  --color-destructive-hover: var(--color-red-800);
+  --color-text-destructive: var(--text-destructive);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +29,9 @@
 
     --button: #cb4e06; /* dark-mode button background */
     --text-button: #0a0a0a; /* dark-mode button text */
+    --destructive: #ff6b6b; /* slightly brighter on dark bg */
+    --destructive-hover: #ff4949;
+    --text-destructive: #0a0a0a;
   }
 }
 

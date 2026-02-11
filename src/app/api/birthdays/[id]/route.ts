@@ -1,5 +1,5 @@
 import { BirthdayDB, UpdateBirthday } from "@/app/schemas/birthday.schema";
-import { clientPromise } from "../../../lib/db";
+import { updateBirthday, deleteBirthday } from "@/app/lib/db";
 import { ObjectId } from "mongodb";
 import * as z from "zod";
 
@@ -55,30 +55,17 @@ export async function PATCH(
       });
     }
 
-    const client = await clientPromise;
-    const db = client.db("test");
-    const birthdays = db.collection<BirthdayDB>("birthdays");
-
-    const result = await birthdays.findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: update },
-      { returnDocument: "after" },
-    );
-
-    if (!result)
+    const updated: BirthdayDB | null = await updateBirthday(id, update);
+    if (!updated)
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
       });
-    const updated = result;
 
     // Serialize for JSON transport
     const out = {
       ...updated,
       _id: String(updated._id),
-      date:
-        updated.date instanceof Date
-          ? updated.date.toISOString()
-          : updated.date,
+      date: updated.date,
     };
     return new Response(JSON.stringify(out), {
       status: 200,
@@ -87,6 +74,55 @@ export async function PATCH(
   } catch (e) {
     // Log full error server-side for easier debugging
     console.error("PATCH /api/birthdays/[id] error:", e);
+    if (e instanceof Error) {
+      return new Response(JSON.stringify(e.message), { status: 500 });
+    }
+    return new Response(JSON.stringify({ error: "Unknown error" }), {
+      status: 500,
+    });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id?: string } },
+) {
+  try {
+    const resolvedParams = await params;
+    const id = resolvedParams?.id;
+    if (!id)
+      return new Response(JSON.stringify({ error: "Missing id" }), {
+        status: 400,
+      });
+    if (!ObjectId.isValid(id)) {
+      return new Response(JSON.stringify({ error: "Invalid id" }), {
+        status: 400,
+      });
+    }
+
+    // Use DB helper to delete
+    const deleted: BirthdayDB | null = await deleteBirthday(id);
+    if (!deleted) {
+      return new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+      });
+    }
+
+    const out = {
+      ...deleted,
+      _id: String(deleted._id),
+      date:
+        deleted.date instanceof Date
+          ? deleted.date.toISOString()
+          : deleted.date,
+    };
+
+    return new Response(JSON.stringify(out), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("DELETE /api/birthdays/[id] error:", e);
     if (e instanceof Error) {
       return new Response(JSON.stringify(e.message), { status: 500 });
     }
