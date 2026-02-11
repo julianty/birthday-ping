@@ -156,3 +156,26 @@ export async function updateBirthday(id: string, update: UpdateBirthday) {
     throw e;
   }
 }
+
+export async function getBirthdaysByMonth(month: number) {
+  try {
+    const client = await clientPromise;
+    const db = client.db("test");
+
+    // Query by month
+    const birthdaysCol = db.collection<BirthdayDB>("birthdays");
+    const birthdaysQuery = await birthdaysCol.find({
+      month: month,
+    });
+
+    if (!birthdaysQuery) {
+      throw new Error("could not complete getBirthdaysByMonth query operation");
+    }
+    // Return results
+    return birthdaysQuery.toArray();
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    }
+  }
+}
