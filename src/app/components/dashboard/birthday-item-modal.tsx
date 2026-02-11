@@ -142,10 +142,9 @@ function BirthdayItemModal({
       }}
     >
       <div
-        className="w-full max-w-2xl bg-foreground text-background rounded-2xl shadow-xl p-6"
+        className="w-full max-w-2xl bg-background text-foreground rounded-2xl shadow-xl p-6"
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        <button onClick={onClose}>x</button>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid grid-cols-1 gap-1">
             <label className="text-sm font-medium">Name</label>
