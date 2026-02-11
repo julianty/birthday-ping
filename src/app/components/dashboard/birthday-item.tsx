@@ -29,7 +29,9 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
   return (
     <li className="mb-2">
       <div onClick={() => setIsModalOpen(true)}>
-        <span>{`${nameState}: ${dateState.getMonth() + 1}/${dateState.getUTCDate()}/${dateState.getFullYear()}`}</span>
+        <span className="block w-full px-2 py-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+          {`${nameState}: ${dateState.getMonth() + 1}/${dateState.getUTCDate()}/${dateState.getFullYear()}`}
+        </span>
         <BirthdayItemModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
