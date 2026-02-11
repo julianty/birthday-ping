@@ -29,7 +29,7 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
   return (
     <li className="mb-2">
       <div onClick={() => setIsModalOpen(true)}>
-        <span>{`${nameState}: ${dateState.getMonth() + 1}/${dateState.getDate()}/${dateState.getFullYear()}`}</span>
+        <span>{`${nameState}: ${dateState.getMonth() + 1}/${dateState.getUTCDate()}/${dateState.getFullYear()}`}</span>
         <BirthdayItemModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
