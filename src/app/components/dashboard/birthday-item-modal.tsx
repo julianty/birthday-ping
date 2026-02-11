@@ -7,16 +7,20 @@ interface BirthdayItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   birthday: BirthdayPlainObject;
+  onSaved: (updated: BirthdayPlainObject) => void;
 }
 
 function BirthdayItemModal({
   isOpen,
   onClose,
   birthday,
+  onSaved,
 }: BirthdayItemModalProps) {
   const [name, setName] = React.useState("");
   const [date, setDate] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
+  // Have ui react to changes in birthday
   React.useEffect(() => {
     if (birthday) {
       const year = birthday.date.getFullYear();
@@ -32,20 +36,88 @@ function BirthdayItemModal({
     }
   }, [birthday]);
 
+  // Return nothing if modal is not open
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
-    console.log("submit");
-  };
+  async function handleSubmit(e: React.SubmitEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const id = birthday._id;
+      // prepare optimistic update object
+      const [y, m, d] = date.split("-").map((s) => Number(s));
+      const optimistic: BirthdayPlainObject = {
+        ...birthday,
+        name,
+        date: new Date(date),
+        month: Number(m) || birthday.month,
+        day: Number(d) || birthday.day,
+      };
+
+      // apply optimistic update to parent immediately
+      try {
+        onSaved?.(optimistic);
+      } catch (err) {
+        console.warn("onSaved callback threw", err);
+      }
+      const res = await fetch(`/api/birthdays/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, date }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("PATCH failed:", text);
+        // rollback optimistic update
+        try {
+          onSaved(birthday);
+        } catch (err) {
+          console.warn("onSaved rollback threw", err);
+        }
+        alert("Failed to save birthday");
+        return;
+      }
+
+      const updated = await res.json();
+      // normalize server response to BirthdayPlainObject (convert date string to Date)
+      const canonical: BirthdayPlainObject = {
+        ...birthday,
+        ...updated,
+        date: updated.date ? new Date(updated.date) : birthday.date,
+      };
+      try {
+        onSaved(canonical);
+      } catch (err) {
+        console.warn("onSaved after save threw", err);
+      }
+
+      onClose();
+    } catch (err) {
+      console.error("Error saving birthday:", err);
+      // rollback optimistic update on error
+      try {
+        onSaved(birthday);
+      } catch (e) {
+        console.warn("onSaved rollback threw", e);
+      }
+      alert("Failed to save birthday");
+    } finally {
+      setSaving(false);
+    }
+  }
   return createPortal(
     <div
-      className="flex items-center justify-center fixed inset-0 bg-gray-800/30"
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 bg-black/40 backdrop-blur-sm"
       onClick={(e: React.MouseEvent) => {
         e.stopPropagation();
         onClose();
       }}
     >
-      <div className="bg-background">
+      <div
+        className="w-full max-w-2xl bg-foreground text-background rounded-2xl shadow-xl p-6"
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      >
         <button onClick={onClose}>x</button>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid grid-cols-1 gap-1">
@@ -81,9 +153,10 @@ function BirthdayItemModal({
             </button>
             <button
               type="submit"
-              className="px-3 py-2 rounded bg-indigo-600 text-white"
+              disabled={saving}
+              className={`px-3 py-2 rounded bg-indigo-600 text-white ${saving ? "opacity-60 cursor-not-allowed" : "hover:bg-indigo-700"}`}
             >
-              Save
+              {saving ? "Saving…" : "Save"}
             </button>
           </div>
         </form>
