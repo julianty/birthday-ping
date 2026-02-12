@@ -5,6 +5,7 @@ import { auth } from "../auth";
 import SubscriptionDisplay from "../components/dashboard/subscription-display";
 import { BirthdayDB, BirthdayPlainObject } from "../schemas/birthday.schema";
 import SendSummaryButton from "../components/dashboard/send-summary-button";
+import TestMonthlyEmailButton from "../components/test-monthly-email";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">
         <div className="flex justify-end">
           <SignOutButton />
+          <TestMonthlyEmailButton />
         </div>
         <SubscriptionDisplay birthdays={birthdaysPlainObject} />
         <SendSummaryButton birthdays={birthdaysPlainObject} />

@@ -9,6 +9,7 @@ export const CreateSubscriptionSchema = z.object({
 export const SubscriptionDBSchema = CreateSubscriptionSchema.extend({
   _id: z.instanceof(ObjectId),
   createdAt: z.date(),
+  lastSentAt: z.date(),
 });
 
 export type CreateSubscription = z.infer<typeof CreateSubscriptionSchema>;
