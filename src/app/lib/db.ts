@@ -318,3 +318,54 @@ export async function updateLastSentAt(
   const result = await subs.bulkWrite(ops);
   return result; // contains matchedCount / modifiedCount etc
 }
+
+export async function getUserBirthdaysByDate(
+  userId: ObjectId | string,
+  date: Date,
+) {
+  const uid = userId instanceof ObjectId ? userId : new ObjectId(userId);
+  const client = await clientPromise;
+  const db = client.db("test");
+
+  const subscriptions = db.collection("subscriptions");
+  const month = date.getMonth() + 1;
+  const day = date.getUTCDate();
+
+  const pipeline = [
+    {
+      $match: { userId: uid },
+    },
+    {
+      $lookup: {
+        from: "birthdays",
+        localField: "birthdayId",
+        foreignField: "_id",
+        as: "birthday",
+      },
+    },
+    {
+      $unwind: "$birthday",
+    },
+    {
+      $match: {
+        $and: [{ "birthday.month": month }, { "birthday.day": day }],
+      },
+    },
+    // {
+    //   $match: { "birthday.day": day + 1 },
+    // },
+  ];
+
+  const aggregationResult = await subscriptions.aggregate(pipeline).toArray();
+  return aggregationResult;
+}
+
+export async function getUserIdFromEmail(userEmail: string) {
+  const client = await clientPromise;
+  const db = client.db("test");
+  const users = db.collection<UserDB>("users");
+
+  const user = await users.findOne({ email: userEmail });
+  const uid = user?._id;
+  return uid;
+}

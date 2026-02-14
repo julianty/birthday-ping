@@ -4,10 +4,14 @@ import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import { auth } from "@/app/auth";
 import {
   getMonthBirthdaySubscriptionsGroupedByUser,
+  getUserBirthdaysByDate,
+  getUserIdFromEmail,
   SubscriptionShape,
   updateLastSentAt,
   UserGroupedSubscriptions,
 } from "./db";
+import { ObjectId } from "mongodb";
+import { headers } from "next/headers";
 
 export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
   const session = await auth();
@@ -68,7 +72,7 @@ export async function sendMonthlyEmail() {
     );
   }
   // Call send monthly email api for each user
-  subscriptionsByUser.forEach(async (doc) => {
+  for (const doc of subscriptionsByUser) {
     const headers = {
       "Content-Type": "application/json",
     };
@@ -113,5 +117,60 @@ export async function sendMonthlyEmail() {
       }
       throw new Error("Unknown error sending reminder email");
     }
-  });
+  }
+}
+
+export async function sendDailyEmail(userEmail: string) {
+  const uid = await getUserIdFromEmail(userEmail);
+  if (!uid) {
+    throw new Error("Could not fetch userId from email");
+  }
+
+  // Find all subscriptions that have a birthday landing today
+  const todayDate = new Date();
+  const birthdays = await getUserBirthdaysByDate(uid, todayDate);
+  console.log(birthdays);
+  if (birthdays.length == 0) {
+    console.log(`no birthdays at this date: ${todayDate}`);
+    return;
+  }
+  // Send email to user
+  try {
+    // Build an absolute URL for the internal API route to avoid issues when
+    // calling from a server environment. Prefer a runtime-configured base URL.
+    const base =
+      process.env.NEXT_PUBLIC_APP_URL ??
+      process.env.NEXTAUTH_URL ??
+      "http://localhost:3000";
+    const url = new URL("/api/send-email", base).toString();
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    const body = {
+      to: userEmail,
+      subject: `You have ${birthdays.length} birthday subscriptions active today`,
+      text: birthdays
+        .map(
+          (bd) =>
+            `${bd.birthday.name}: ${bd.birthday.month}/${bd.birthday.day}`,
+        )
+        .join("\n"),
+    };
+    const res = await fetch(url, {
+      method: "post",
+      headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("send daily email failed", res.status, text);
+    }
+    // Update lastSent at
+    const subscriptionIds = birthdays.map((bd) => bd._id);
+    const updateResponse = updateLastSentAt(subscriptionIds);
+  } catch (e) {
+    if (e instanceof Error) {
+      throw e;
+    }
+  }
 }
