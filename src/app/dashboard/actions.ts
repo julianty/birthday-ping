@@ -15,7 +15,6 @@ export async function submitReminder(formData: FormData) {
     return;
   }
   const dateString = formData.get("date") as string;
-  console.log(dateString);
   const month = Number(dateString.split("-")[1]);
   const day = Number(dateString.split("-")[2]);
 
