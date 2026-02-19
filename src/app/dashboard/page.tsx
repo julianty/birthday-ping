@@ -7,6 +7,7 @@ import { BirthdayDB, BirthdayPlainObject } from "../schemas/birthday.schema";
 import SendSummaryButton from "../components/dashboard/send-summary-button";
 import TestMonthlyEmailButton from "../components/test-monthly-email";
 import TestDailyEmailButton from "../components/test-daily-email";
+import SignInButton from "../components/sign-in-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,6 +18,7 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
         <p className="mb-6">You must be signed in to view your reminders.</p>
         <SignOutButton />
+        <SignInButton />
       </main>
     );
   }
