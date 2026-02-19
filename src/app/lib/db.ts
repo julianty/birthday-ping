@@ -369,3 +369,14 @@ export async function getUserIdFromEmail(userEmail: string) {
   const uid = user?._id;
   return uid;
 }
+
+export async function getRefreshToken(uid: string | ObjectId) {
+  const userId = typeof uid === "string" ? new ObjectId(uid) : uid;
+  const client = await clientPromise;
+  const db = client.db("test");
+  const acct = await db.collection("accounts").findOne({
+    provider: "google",
+    userId,
+  });
+  return acct?.refresh_token ?? null;
+}
