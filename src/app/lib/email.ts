@@ -4,22 +4,71 @@ import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import { auth } from "@/app/auth";
 import {
   getMonthBirthdaySubscriptionsGroupedByUser,
+  getRefreshToken,
   getUserBirthdaysByDate,
   getUserIdFromEmail,
   SubscriptionShape,
   updateLastSentAt,
   UserGroupedSubscriptions,
 } from "./db";
-import { ObjectId } from "mongodb";
-import { headers } from "next/headers";
+import { google } from "googleapis";
+
+async function SendEmail({
+  to,
+  subject,
+  text,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    throw new Error("Not authenticated");
+  }
+  // These should be set in your environment variables
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const uid = await getUserIdFromEmail(session.user.email);
+  const refreshToken = await getRefreshToken(uid!);
+
+  const oAuth2Client = new google.auth.OAuth2(
+    clientId,
+    clientSecret,
+    redirectUri,
+  );
+  oAuth2Client.setCredentials({ refresh_token: refreshToken });
+
+  const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+
+  const messageParts = [
+    `To: ${to}`,
+    "Content-Type: text/plain; charset=utf-8",
+    `Subject: ${subject}`,
+    "",
+    text,
+  ];
+  const message = messageParts.join("\n");
+  const encodedMessage = Buffer.from(message).toString("base64url");
+
+  try {
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: encodedMessage,
+      },
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    throw error;
+  }
+}
 
 export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
   const session = await auth();
   if (!session?.user?.email) throw new Error("No user email");
-
-  const headers = {
-    "Content-Type": "application/json",
-  };
 
   const body = {
     to: session.user.email,
@@ -28,35 +77,36 @@ export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
       .map((r) => `${r.name}: ${r.date.toDateString()}`)
       .join("\n"),
   };
+  SendEmail(body);
 
-  // Build an absolute URL for the internal API route to avoid issues when
-  // calling from a server environment. Prefer a runtime-configured base URL.
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.NEXTAUTH_URL ??
-    "http://localhost:3000";
-  const url = new URL("/api/send-email", base).toString();
+  // // Build an absolute URL for the internal API route to avoid issues when
+  // // calling from a server environment. Prefer a runtime-configured base URL.
+  // const base =
+  //   process.env.NEXT_PUBLIC_APP_URL ??
+  //   process.env.NEXTAUTH_URL ??
+  //   "http://localhost:3000";
+  // const url = new URL("/api/send-email", base).toString();
 
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
+  // try {
+  //   const res = await fetch(url, {
+  //     method: "POST",
+  //     headers,
+  //     body: JSON.stringify(body),
+  //   });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`send-email failed: ${res.status} ${text}`);
-    }
+  //   if (!res.ok) {
+  //     const text = await res.text();
+  //     throw new Error(`send-email failed: ${res.status} ${text}`);
+  //   }
 
-    return await res.json();
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      throw error;
-    }
-    throw new Error("Unknown error sending reminder email");
-  }
+  //   return await res.json();
+  // } catch (error) {
+  //   if (error instanceof Error) {
+  //     console.error(error.message);
+  //     throw error;
+  //   }
+  //   throw new Error("Unknown error sending reminder email");
+  // }
 }
 
 export async function sendMonthlyEmail() {
