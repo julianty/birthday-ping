@@ -29,7 +29,7 @@ export { clientPromise };
 export async function addReminder(reminder: CreateReminder) {
   try {
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
     const testReminders = db.collection("test-reminders");
 
     const result = await testReminders.insertOne(reminder);
@@ -44,7 +44,7 @@ export async function addReminder(reminder: CreateReminder) {
 export async function getReminders(userEmail: string) {
   try {
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
     // Find user with email
     const users = db.collection("users");
     const findUser = await users.findOne({
@@ -82,7 +82,7 @@ export async function addSubscription(
   try {
     // Connect to database
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
 
     // Find user in database
     const users = db.collection("users");
@@ -127,7 +127,7 @@ export async function addSubscription(
 export async function deleteBirthday(id: string) {
   try {
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
     const birthdays = db.collection<BirthdayDB>("birthdays");
 
     const oid = new ObjectId(id);
@@ -145,7 +145,7 @@ export async function deleteBirthday(id: string) {
 export async function updateBirthday(id: string, update: UpdateBirthday) {
   try {
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
     const birthdays = db.collection<BirthdayDB>("birthdays");
 
     const result = await birthdays.findOneAndUpdate(
@@ -163,7 +163,7 @@ export async function updateBirthday(id: string, update: UpdateBirthday) {
 export async function getBirthdaysByMonth(month: number) {
   try {
     const client = await clientPromise;
-    const db = client.db("test");
+    const db = client.db(process.env.MONGO_DB_NAME || "test");
 
     // Query by month
     const birthdaysCol = db.collection<BirthdayDB>("birthdays");
@@ -305,7 +305,7 @@ export async function updateLastSentAt(
   sentAt = new Date(),
 ) {
   const client = await clientPromise;
-  const db = client.db("test");
+  const db = client.db(process.env.MONGO_DB_NAME || "test");
   const subs = db.collection("subscriptions");
 
   const ops = subscriptionIds.map((id) => ({
@@ -325,7 +325,7 @@ export async function getUserBirthdaysByDate(
 ) {
   const uid = userId instanceof ObjectId ? userId : new ObjectId(userId);
   const client = await clientPromise;
-  const db = client.db("test");
+  const db = client.db(process.env.MONGO_DB_NAME || "test");
 
   const subscriptions = db.collection("subscriptions");
   const month = date.getMonth() + 1;
