@@ -107,9 +107,7 @@ export async function sendMonthlyEmail() {
 
     SendEmail(body);
     // Update subscription lastSentAt
-    const updateResult = await updateLastSentAt(
-      doc.subscriptions.map((sub) => sub.subscriptionId),
-    );
+    await updateLastSentAt(doc.subscriptions.map((sub) => sub.subscriptionId));
   }
 }
 
@@ -138,5 +136,5 @@ export async function sendDailyEmail(userEmail: string) {
   // Send email to user
   // Update lastSent at
   const subscriptionIds = birthdays.map((bd) => bd._id);
-  const updateResponse = updateLastSentAt(subscriptionIds);
+  await updateLastSentAt(subscriptionIds);
 }
