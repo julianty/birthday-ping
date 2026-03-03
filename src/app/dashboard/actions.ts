@@ -10,6 +10,8 @@ export async function submitReminder(formData: FormData) {
   const userEmail = formData.get("email") as string;
   const name = formData.get("name") as string;
   const date = z.coerce.date().parse(formData.get("date"));
+  const groupId = formData.get("groupId") as string | null;
+
   if (!name || !date) {
     console.error("Form data is not valid, name or date not submitted");
     return;
@@ -23,6 +25,7 @@ export async function submitReminder(formData: FormData) {
     date,
     month,
     day,
+    ...(groupId && { groupId }),
   };
 
   const validated = CreateBirthdaySchema.omit({ createdBy: true }).safeParse(

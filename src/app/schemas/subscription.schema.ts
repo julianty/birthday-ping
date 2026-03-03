@@ -4,6 +4,7 @@ import * as z from "zod";
 export const CreateSubscriptionSchema = z.object({
   userId: z.instanceof(ObjectId),
   birthdayId: z.instanceof(ObjectId),
+  groupId: z.instanceof(ObjectId).optional(),
 });
 
 export const SubscriptionDBSchema = CreateSubscriptionSchema.extend({
