@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Reminder } from "@/app/types";
 import { submitReminder } from "@/app/dashboard/actions";
 import { useSession } from "next-auth/react";
+import GroupSelect from "./group-select";
 
 function AddReminderForm() {
   const { data: session, status } = useSession();
@@ -12,6 +13,7 @@ function AddReminderForm() {
     name: "",
     date: "",
   });
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (status === "authenticated") {
@@ -22,6 +24,7 @@ function AddReminderForm() {
   return (
     <form action={submitReminder} className="flex flex-col gap-4 items-center">
       <input name="email" value={userEmail} readOnly hidden />
+      <input name="groupId" value={selectedGroupId ?? ""} readOnly hidden />
       <input
         name="name"
         type="text"
@@ -42,6 +45,11 @@ function AddReminderForm() {
         }
         className="px-4 py-2 rounded border w-full"
         required
+      />
+      <GroupSelect
+        value={selectedGroupId ?? undefined}
+        onChange={(gId) => setSelectedGroupId(gId)}
+        className="w-full text-left"
       />
       <button
         type="submit"

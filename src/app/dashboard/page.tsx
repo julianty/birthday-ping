@@ -1,9 +1,9 @@
 import AddReminderForm from "@/app/components/dashboard/add-reminder-form";
-import { getReminders } from "@/app/lib/db";
+import { getReminders, BirthdayWithGroup } from "@/app/lib/db";
 import SignOutButton from "../components/sign-out-button";
 import { auth } from "../auth";
 import SubscriptionDisplay from "../components/dashboard/subscription-display";
-import { BirthdayDB, BirthdayPlainObject } from "../schemas/birthday.schema";
+import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import SendSummaryButton from "../components/dashboard/send-summary-button";
 import TestMonthlyEmailButton from "../components/test-monthly-email";
 import TestDailyEmailButton from "../components/test-daily-email";
@@ -30,23 +30,23 @@ export default async function DashboardPage() {
       </main>
     );
   }
-  const birthdays: BirthdayDB[] | undefined = await getReminders(
+  const birthdays: BirthdayWithGroup[] | undefined = await getReminders(
     session.user?.email,
   );
 
   if (!birthdays) {
     return <main>Failed to fetch reminders from database</main>;
   }
-  const birthdaysPlainObject: BirthdayPlainObject[] | undefined = birthdays.map(
-    (bd) => {
-      const plainBd = {
-        ...bd,
-        _id: bd._id.toString(),
-        createdBy: bd.createdBy.toString(),
-      };
-      return plainBd;
-    },
-  );
+  const birthdaysPlainObject: BirthdayPlainObject[] = birthdays.map((bd) => ({
+    _id: bd._id.toString(),
+    name: bd.name,
+    date: bd.date,
+    month: bd.month,
+    day: bd.day,
+    createdBy: bd.createdBy.toString(),
+    ...(bd.groupId && { groupId: bd.groupId.toString() }),
+    ...(bd.groupName && { groupName: bd.groupName }),
+  }));
   return (
     <main className="flex flex-col items-center justify-center min-h-screen">
       <div className="bg-zinc-900 rounded-xl shadow-lg p-8 max-w-xl w-full text-center">

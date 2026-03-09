@@ -35,7 +35,10 @@ export async function POST(
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (e) {
     console.error("POST /api/groups/[id]/members error:", e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -71,6 +74,9 @@ export async function DELETE(
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (e) {
     console.error("DELETE /api/groups/[id]/members error:", e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

@@ -42,33 +42,60 @@ export async function addReminder(reminder: CreateReminder) {
   }
 }
 
-export async function getReminders(userEmail: string) {
+export type BirthdayWithGroup = BirthdayDB & {
+  groupId?: ObjectId;
+  groupName?: string;
+};
+
+export async function getReminders(
+  userEmail: string,
+): Promise<BirthdayWithGroup[] | undefined> {
   try {
     const client = await clientPromise;
     const db = client.db(process.env.MONGO_DB_NAME || "test");
-    // Find user with email
-    const users = db.collection("users");
-    const findUser = await users.findOne({
-      email: userEmail,
-    });
-    const userId = findUser?._id;
 
-    // Collect all user's subscriptions
-    const subscriptions = await db
-      .collection<{ birthdayId: ObjectId }>("subscriptions")
-      .find({ userId })
+    const user = await db.collection("users").findOne({ email: userEmail });
+    if (!user) return [];
+    const userId = user._id;
+
+    const pipeline = [
+      { $match: { userId } },
+      {
+        $lookup: {
+          from: "birthdays",
+          localField: "birthdayId",
+          foreignField: "_id",
+          as: "birthday",
+        },
+      },
+      { $unwind: "$birthday" },
+      {
+        $lookup: {
+          from: "groups",
+          localField: "groupId",
+          foreignField: "_id",
+          as: "group",
+        },
+      },
+      { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: "$birthday._id",
+          name: "$birthday.name",
+          date: "$birthday.date",
+          month: "$birthday.month",
+          day: "$birthday.day",
+          createdBy: "$birthday.createdBy",
+          groupId: "$groupId",
+          groupName: "$group.name",
+        },
+      },
+    ];
+
+    return db
+      .collection("subscriptions")
+      .aggregate<BirthdayWithGroup>(pipeline)
       .toArray();
-
-    const birthdayIds = subscriptions.map((s) => s.birthdayId);
-    if (birthdayIds.length === 0) return [];
-
-    // Collect all birthdays
-    const birthdays = await db
-      .collection<WithId<CreateBirthday>>("birthdays")
-      .find({ _id: { $in: birthdayIds } })
-      .toArray();
-
-    return birthdays;
   } catch (e) {
     if (e instanceof Error) {
       console.error(e.message);
@@ -79,6 +106,7 @@ export async function getReminders(userEmail: string) {
 export async function addSubscription(
   userEmail: string,
   birthdayData: Omit<CreateBirthday, "createdBy">,
+  groupId?: string,
 ) {
   try {
     // Connect to database
@@ -108,10 +136,11 @@ export async function addSubscription(
     const birthdayId = insertBirthdayResult.insertedId;
     // Add subscription to database
     const subscriptions = db.collection("subscriptions");
-    const subscriptionData = {
+    const subscriptionData: CreateSubscription = {
       userId,
       birthdayId,
-    } satisfies CreateSubscription;
+      ...(groupId ? { groupId: new ObjectId(groupId) } : {}),
+    };
     const insertSubscriptionResult =
       await subscriptions.insertOne(subscriptionData);
     if (!insertSubscriptionResult.acknowledged) {
@@ -491,6 +520,33 @@ export async function deleteGroup(
 
   const result = await groups.deleteOne({ _id: gid, ownerId: oid });
   return result.deletedCount > 0;
+}
+
+export async function updateSubscriptionGroup(
+  birthdayId: ObjectId | string,
+  userId: ObjectId | string,
+  groupId: ObjectId | string | null,
+): Promise<boolean> {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGO_DB_NAME || "test");
+  const subs = db.collection<SubscriptionDB>("subscriptions");
+
+  const bid =
+    typeof birthdayId === "string" ? new ObjectId(birthdayId) : birthdayId;
+  const uid = typeof userId === "string" ? new ObjectId(userId) : userId;
+
+  const update =
+    groupId === null
+      ? { $unset: { groupId: true as const } }
+      : {
+          $set: {
+            groupId:
+              typeof groupId === "string" ? new ObjectId(groupId) : groupId,
+          },
+        };
+
+  const result = await subs.updateOne({ birthdayId: bid, userId: uid }, update);
+  return result.modifiedCount > 0;
 }
 
 export async function getGroupMembers(

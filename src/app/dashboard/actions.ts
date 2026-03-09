@@ -33,6 +33,6 @@ export async function submitReminder(formData: FormData) {
   );
 
   if (!validated.success) throw new Error("Invalid birthday");
-  await addSubscription(userEmail, validated.data);
+  await addSubscription(userEmail, validated.data, groupId ?? undefined);
   revalidatePath("/dashboard");
 }

@@ -33,7 +33,10 @@ export async function GET(
     return NextResponse.json(group, { status: 200 });
   } catch (e) {
     console.error("GET /api/groups/[id] error:", e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -69,6 +72,9 @@ export async function DELETE(
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (e) {
     console.error("DELETE /api/groups/[id] error:", e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
