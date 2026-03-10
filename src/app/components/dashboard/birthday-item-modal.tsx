@@ -3,6 +3,7 @@ import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
+import GroupSelect from "./group-select";
 
 interface BirthdayItemModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ function BirthdayItemModal({
 }: BirthdayItemModalProps) {
   const [name, setName] = React.useState("");
   const [date, setDate] = React.useState("");
+  const [groupId, setGroupId] = React.useState<string | null>(null);
+  const [groupName, setGroupName] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const router = useRouter();
 
@@ -27,6 +30,8 @@ function BirthdayItemModal({
     if (birthday) {
       const year = birthday.date.getFullYear();
       setName(birthday.name ?? "");
+      setGroupId(birthday.groupId ?? null);
+      setGroupName(birthday.groupName ?? null);
       const pad = (n: number) => String(n).padStart(2, "0");
       if (year && birthday.month && birthday.day) {
         setDate(`${year}-${pad(birthday.month)}-${pad(birthday.day)}`);
@@ -54,6 +59,8 @@ function BirthdayItemModal({
         date: new Date(date),
         month: Number(m) || birthday.month,
         day: Number(d) || birthday.day,
+        groupId: groupId ?? undefined,
+        groupName: groupName ?? undefined,
       };
 
       // apply optimistic update to parent immediately
@@ -62,6 +69,8 @@ function BirthdayItemModal({
       } catch (err) {
         console.warn("onSaved callback threw", err);
       }
+
+      // Save birthday fields
       const res = await fetch(`/api/birthdays/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -81,12 +90,28 @@ function BirthdayItemModal({
         return;
       }
 
+      // Save group change if it differs
+      const groupChanged =
+        (groupId ?? undefined) !== (birthday.groupId ?? undefined);
+      if (groupChanged) {
+        const groupRes = await fetch(`/api/subscriptions/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupId: groupId ?? null }),
+        });
+        if (!groupRes.ok) {
+          console.error("Group PATCH failed:", await groupRes.text());
+        }
+      }
+
       const updated = await res.json();
       // normalize server response to BirthdayPlainObject (convert date string to Date)
       const canonical: BirthdayPlainObject = {
         ...birthday,
         ...updated,
         date: updated.date ? new Date(updated.date) : birthday.date,
+        groupId: groupId ?? undefined,
+        groupName: groupName ?? undefined,
       };
       try {
         onSaved(canonical);
@@ -168,6 +193,14 @@ function BirthdayItemModal({
               required
             />
           </div>
+
+          <GroupSelect
+            value={groupId ?? undefined}
+            onChange={(gId, gName) => {
+              setGroupId(gId);
+              setGroupName(gName);
+            }}
+          />
 
           <div className="flex justify-between items-center gap-2 pt-2">
             <div>

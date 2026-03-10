@@ -20,6 +20,8 @@ export const BirthdayPlainObjectSchema = z.object({
   day: z.int(),
   createdBy: z.string(),
   _id: z.string(),
+  groupId: z.string().optional(),
+  groupName: z.string().optional(),
 });
 export const UpdateBirthdaySchema = CreateBirthdaySchema.partial();
 
