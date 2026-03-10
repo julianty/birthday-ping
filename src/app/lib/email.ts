@@ -26,13 +26,41 @@ async function SendEmail({
   if (!session?.user?.email) {
     throw new Error("Not authenticated");
   }
-  // These should be set in your environment variables
+
+  // Load environment variables with validation
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
-  const uid = await getUserIdFromEmail(session.user.email);
-  const refreshToken = await getRefreshToken(uid!);
 
+  if (!clientId || !clientSecret || !redirectUri) {
+    throw new Error("Missing Google OAuth configuration");
+  }
+
+  // Get user data with proper error handling
+  const uid = await getUserIdFromEmail(session.user.email);
+  if (!uid) {
+    throw new Error(`No user ID found for email: ${session.user.email}`);
+  }
+
+  const refreshToken = await getRefreshToken(uid);
+  if (!refreshToken) {
+    console.error(`❌ No refresh token found for user ${session.user.email}`);
+    console.error(
+      "User needs to sign out and sign in again to grant fresh tokens",
+    );
+    throw new Error(
+      "No refresh token available - please sign out and sign in again",
+    );
+  }
+
+  console.log("🔍 Token info:", {
+    userId: uid.toString(),
+    userEmail: session.user.email,
+    tokenLength: refreshToken.length,
+    tokenPrefix: refreshToken.substring(0, 10),
+  });
+
+  // Create oAuth client
   const oAuth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
@@ -40,8 +68,7 @@ async function SendEmail({
   );
   oAuth2Client.setCredentials({ refresh_token: refreshToken });
 
-  const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
-
+  // Build message
   const messageParts = [
     `To: ${to}`,
     "Content-Type: text/plain; charset=utf-8",
@@ -53,16 +80,34 @@ async function SendEmail({
   const encodedMessage = Buffer.from(message).toString("base64url");
 
   try {
+    await oAuth2Client.getAccessToken();
+
+    const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+
+    console.log("📧 Sending email to:", to);
     await gmail.users.messages.send({
       userId: "me",
       requestBody: {
         raw: encodedMessage,
       },
     });
+    console.log("✅ Email sent successfully");
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    console.error("❌ SendEmail error:", {
+      errorType: error?.constructor?.name,
+      errorMessage: error instanceof Error ? error.message : undefined,
+      userEmail: session.user.email,
+      fullError: error,
+    });
+
+    if (error instanceof Error && error.message.includes("invalid_grant")) {
+      console.error("🚨 Invalid grant - token may be expired or revoked");
+      throw new Error(
+        "Authentication failed - please sign out and sign in again",
+      );
     }
+
+    throw error;
   }
 }
 

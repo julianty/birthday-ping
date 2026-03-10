@@ -8,9 +8,9 @@ import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { clientPromise } from "./lib/db";
+import { syncAccountTokens } from "./lib/auth-helpers";
 
 export const config = {
-  // Configure one or more authentication providers
   adapter: MongoDBAdapter(clientPromise),
   providers: [
     GoogleProvider({
@@ -21,11 +21,19 @@ export const config = {
           scope:
             "openid email profile https://www.googleapis.com/auth/gmail.send",
           access_type: "offline",
-          prompt: "consent",
+          prompt: "select_account consent", // Force both account selection AND consent
+          include_granted_scopes: true,
         },
       },
     }),
   ],
+  events: {
+    signIn: async ({ user, account }) => {
+      if (account && user.email) {
+        await syncAccountTokens(user.email, account);
+      }
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthOptions;
 
