@@ -7,6 +7,21 @@ export type BirthdayWithGroup = BirthdayDB & {
   groupName?: string;
 };
 
+/**
+ * Returns all birthdays the given user is subscribed to, enriched with optional group metadata.
+ *
+ * Data flow:
+ * 1. Resolve the user by email to get their `_id`.
+ * 2. Query `subscriptions` for that user.
+ * 3. Join each subscription to its birthday and optional group.
+ * 4. Project the result into `BirthdayWithGroup`.
+ * 5. Sort chronologically by recurring birthday date (`month`, then `day`).
+ *
+ * Notes:
+ * - Sorting is performed in the database so all consumers receive a consistent order.
+ * - An empty array is returned when the user is not found.
+ * - `undefined` is returned only when an error occurs.
+ */
 export async function getReminders(
   userEmail: string,
 ): Promise<BirthdayWithGroup[] | undefined> {
@@ -50,6 +65,7 @@ export async function getReminders(
           groupName: "$group.name",
         },
       },
+      { $sort: { month: 1, day: 1, name: 1 } },
     ];
 
     return db
