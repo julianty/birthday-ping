@@ -60,6 +60,7 @@ export async function getReminders(
           date: "$birthday.date",
           month: "$birthday.month",
           day: "$birthday.day",
+          year: "$birthday.year",
           createdBy: "$birthday.createdBy",
           groupId: "$groupId",
           groupName: "$group.name",
@@ -98,15 +99,38 @@ export async function getBirthdaysByMonth(month: number) {
   }
 }
 
-export async function updateBirthday(id: string, update: UpdateBirthday) {
+export async function updateBirthday(
+  id: string,
+  update: UpdateBirthday,
+  unsetFields: Array<"date" | "year"> = [],
+) {
   try {
     const client = await clientPromise;
     const db = client.db(process.env.MONGO_DB_NAME || "test");
     const birthdays = db.collection<BirthdayDB>("birthdays");
 
+    const updateDoc: {
+      $set?: UpdateBirthday;
+      $unset?: Partial<Record<"date" | "year", "">>;
+    } = {};
+
+    if (Object.keys(update).length > 0) {
+      updateDoc.$set = update;
+    }
+
+    if (unsetFields.length > 0) {
+      updateDoc.$unset = Object.fromEntries(
+        unsetFields.map((field) => [field, ""]),
+      ) as Partial<Record<"date" | "year", "">>;
+    }
+
+    if (!updateDoc.$set && !updateDoc.$unset) {
+      return null;
+    }
+
     const result = await birthdays.findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: update },
+      updateDoc,
       { returnDocument: "after" },
     );
     return result ?? null;

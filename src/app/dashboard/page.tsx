@@ -56,6 +56,7 @@ export default async function DashboardPage() {
     date: bd.date,
     month: bd.month,
     day: bd.day,
+    ...(typeof bd.year === "number" ? { year: bd.year } : {}),
     createdBy: bd.createdBy.toString(),
     ...(bd.groupId && { groupId: bd.groupId.toString() }),
     ...(bd.groupName && { groupName: bd.groupName }),

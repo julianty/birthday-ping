@@ -13,7 +13,9 @@ function AddReminderForm() {
   const [newReminder, setNewReminder] = useState<Reminder>({
     id: 1,
     name: "",
-    date: "",
+    month: "",
+    day: "",
+    year: "",
   });
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
@@ -25,7 +27,7 @@ function AddReminderForm() {
 
   function handleClose() {
     setIsOpen(false);
-    setNewReminder({ id: 1, name: "", date: "" });
+    setNewReminder({ id: 1, name: "", month: "", day: "", year: "" });
     setSelectedGroupId(null);
   }
 
@@ -113,16 +115,53 @@ function AddReminderForm() {
                   <label className="text-sm font-medium text-muted">
                     Birthday
                   </label>
-                  <input
-                    name="date"
-                    type="date"
-                    value={newReminder.date}
-                    onChange={(e) =>
-                      setNewReminder({ ...newReminder, date: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
-                    required
-                  />
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      name="month"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={12}
+                      placeholder="MM"
+                      value={newReminder.month}
+                      onChange={(e) =>
+                        setNewReminder({
+                          ...newReminder,
+                          month: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                      required
+                    />
+                    <input
+                      name="day"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={31}
+                      placeholder="DD"
+                      value={newReminder.day}
+                      onChange={(e) =>
+                        setNewReminder({ ...newReminder, day: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                      required
+                    />
+                    <input
+                      name="year"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={9999}
+                      placeholder="YYYY"
+                      value={newReminder.year}
+                      onChange={(e) =>
+                        setNewReminder({ ...newReminder, year: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                    />
+                  </div>
+                  <p className="text-xs text-muted">Year is optional.</p>
                 </div>
 
                 <GroupSelect

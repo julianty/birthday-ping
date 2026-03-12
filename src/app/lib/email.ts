@@ -2,6 +2,7 @@
 
 import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import { auth } from "@/app/auth";
+import { formatBirthdayLabel } from "./date.utils";
 import {
   getMonthBirthdaySubscriptionsGroupedByUser,
   getRefreshToken,
@@ -119,7 +120,7 @@ export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
     to: session.user.email,
     subject: "Here are all of the birthdays associated with your account!",
     text: birthdays
-      .map((r) => `${r.name}: ${r.date.toDateString()}`)
+      .map((r) => `${r.name}: ${formatBirthdayLabel(r.month, r.day, r.year)}`)
       .join("\n"),
   };
   SendEmail(body);
@@ -145,7 +146,11 @@ export async function sendMonthlyEmail() {
       text: doc.subscriptions
         .map((subscription: SubscriptionShape) => {
           const bday = subscription.birthday;
-          return `${bday.name}: ${bday.month}/${bday.day}/${new Date(bday.date).getFullYear()}`;
+          return `${bday.name}: ${formatBirthdayLabel(
+            bday.month,
+            bday.day,
+            bday.year,
+          )}`;
         })
         .join("\n"),
     };

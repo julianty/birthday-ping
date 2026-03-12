@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import BirthdayItemModal from "./birthday-item-modal";
 import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
+import { formatBirthdayLabel } from "@/app/lib/date.utils";
 
 interface BirthdayItemProps {
   birthday: BirthdayPlainObject;
@@ -24,10 +25,10 @@ const MONTH_SHORT = [
 
 function BirthdayItem({ birthday }: BirthdayItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const initialDate =
-    birthday.date instanceof Date ? birthday.date : new Date(birthday.date);
   const [nameState, setNameState] = useState(birthday.name);
-  const [dateState, setDateState] = useState(initialDate);
+  const [monthState, setMonthState] = useState(birthday.month);
+  const [dayState, setDayState] = useState(birthday.day);
+  const [yearState, setYearState] = useState<number | undefined>(birthday.year);
   const [groupNameState, setGroupNameState] = useState(
     birthday.groupName ?? null,
   );
@@ -35,18 +36,20 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
   function handleSaved(updated: BirthdayPlainObject) {
     if (!updated) return;
     if (typeof updated.name === "string") setNameState(updated.name);
-    if (updated.date) {
-      const d =
-        typeof updated.date === "string"
-          ? new Date(updated.date)
-          : updated.date;
-      if (!Number.isNaN(d.getTime())) setDateState(d);
-    }
+    if (typeof updated.month === "number") setMonthState(updated.month);
+    if (typeof updated.day === "number") setDayState(updated.day);
+    setYearState(updated.year);
     setGroupNameState(updated.groupName ?? null);
   }
 
   const initial = nameState.charAt(0).toUpperCase();
-  const dateLabel = `${MONTH_SHORT[dateState.getMonth()]} ${dateState.getUTCDate()}`;
+  const dateLabel = useMemo(() => {
+    const monthLabel = MONTH_SHORT[Math.max(0, monthState - 1)] ?? "";
+    const numericLabel = formatBirthdayLabel(monthState, dayState, yearState);
+    const humanLabel = `${monthLabel} ${dayState}${yearState ? `, ${yearState}` : ""}`;
+
+    return monthLabel ? humanLabel : numericLabel;
+  }, [monthState, dayState, yearState]);
 
   return (
     <li

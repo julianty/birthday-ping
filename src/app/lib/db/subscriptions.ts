@@ -12,9 +12,10 @@ export type SubscriptionShape = {
   birthday: {
     _id: ObjectId;
     name: string;
-    date: Date;
+    date?: Date;
     month: number;
     day: number;
+    year?: number;
     createdBy: ObjectId;
   };
 };

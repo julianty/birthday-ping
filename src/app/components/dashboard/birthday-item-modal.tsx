@@ -1,5 +1,6 @@
 "use client";
 import { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
+import { parseBirthdayParts, toBirthdayDate } from "@/app/lib/date.utils";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
@@ -19,7 +20,9 @@ function BirthdayItemModal({
   onSaved,
 }: BirthdayItemModalProps) {
   const [name, setName] = React.useState("");
-  const [date, setDate] = React.useState("");
+  const [month, setMonth] = React.useState("");
+  const [day, setDay] = React.useState("");
+  const [year, setYear] = React.useState("");
   const [groupId, setGroupId] = React.useState<string | null>(null);
   const [groupName, setGroupName] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
@@ -28,17 +31,18 @@ function BirthdayItemModal({
   // Have ui react to changes in birthday
   React.useEffect(() => {
     if (birthday) {
-      const year = birthday.date.getFullYear();
       setName(birthday.name ?? "");
       setGroupId(birthday.groupId ?? null);
       setGroupName(birthday.groupName ?? null);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      if (year && birthday.month && birthday.day) {
-        setDate(`${year}-${pad(birthday.month)}-${pad(birthday.day)}`);
+      setMonth(String(birthday.month ?? ""));
+      setDay(String(birthday.day ?? ""));
+
+      if (birthday.year !== undefined) {
+        setYear(String(birthday.year));
       } else if (birthday.date) {
-        setDate(birthday.date.toString());
+        setYear(String(new Date(birthday.date).getUTCFullYear()));
       } else {
-        setDate("");
+        setYear("");
       }
     }
   }, [birthday]);
@@ -51,14 +55,26 @@ function BirthdayItemModal({
     setSaving(true);
     try {
       const id = birthday._id;
+      let parsedBirthday: { month: number; day: number; year?: number };
+      try {
+        parsedBirthday = parseBirthdayParts({ month, day, year });
+      } catch (error) {
+        alert(error instanceof Error ? error.message : "Invalid birthday");
+        return;
+      }
+
       // prepare optimistic update object
-      const [y, m, d] = date.split("-").map((s) => Number(s));
       const optimistic: BirthdayPlainObject = {
         ...birthday,
         name,
-        date: new Date(date),
-        month: Number(m) || birthday.month,
-        day: Number(d) || birthday.day,
+        month: parsedBirthday.month,
+        day: parsedBirthday.day,
+        year: parsedBirthday.year,
+        date: toBirthdayDate(
+          parsedBirthday.month,
+          parsedBirthday.day,
+          parsedBirthday.year,
+        ),
         groupId: groupId ?? undefined,
         groupName: groupName ?? undefined,
       };
@@ -74,7 +90,12 @@ function BirthdayItemModal({
       const res = await fetch(`/api/birthdays/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, date }),
+        body: JSON.stringify({
+          name,
+          month: parsedBirthday.month,
+          day: parsedBirthday.day,
+          year: parsedBirthday.year ?? null,
+        }),
       });
 
       if (!res.ok) {
@@ -109,7 +130,8 @@ function BirthdayItemModal({
       const canonical: BirthdayPlainObject = {
         ...birthday,
         ...updated,
-        date: updated.date ? new Date(updated.date) : birthday.date,
+        date: updated.date ? new Date(updated.date) : undefined,
+        year: typeof updated.year === "number" ? updated.year : undefined,
         groupId: groupId ?? undefined,
         groupName: groupName ?? undefined,
       };
@@ -216,14 +238,44 @@ function BirthdayItemModal({
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-muted">Birthday</label>
-            <input
-              type="date"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              aria-label="date"
-              required
-            />
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={12}
+                placeholder="MM"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+                aria-label="month"
+                required
+              />
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={31}
+                placeholder="DD"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                aria-label="day"
+                required
+              />
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={9999}
+                placeholder="YYYY"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                aria-label="year"
+              />
+            </div>
+            <p className="text-xs text-muted">Year is optional.</p>
           </div>
 
           <GroupSelect
