@@ -87,12 +87,14 @@ export default function GroupSelect({
 
   return (
     <div className={className}>
-      <label className="block text-sm font-medium mb-1">Group (optional)</label>
+      <label className="block text-sm font-medium text-muted mb-1">
+        Group (optional)
+      </label>
       <select
         value={value || ""}
         onChange={handleSelectChange}
         disabled={loading}
-        className="w-full rounded border px-3 py-2"
+        className="w-full rounded-xl border border-border bg-background text-foreground px-4 py-3 text-base"
       >
         <option value="">No group</option>
         {groups.map((g) => (
@@ -116,7 +118,7 @@ export default function GroupSelect({
                 handleCreate();
               }
             }}
-            className="flex-1 rounded border px-3 py-1 text-sm"
+            className="flex-1 rounded-xl border border-border bg-background text-foreground px-3 py-2 text-sm"
             disabled={creating}
             autoFocus
           />
@@ -124,7 +126,7 @@ export default function GroupSelect({
             type="button"
             onClick={handleCreate}
             disabled={creating || !newName.trim()}
-            className="rounded bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-xl bg-accent px-3 py-2 text-sm text-white hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {creating ? "…" : "Add"}
           </button>
@@ -134,7 +136,7 @@ export default function GroupSelect({
               setShowInlineCreate(false);
               setNewName("");
             }}
-            className="rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-700"
+            className="rounded-xl px-2 py-2 text-sm text-muted hover:text-foreground transition-colors"
           >
             Cancel
           </button>

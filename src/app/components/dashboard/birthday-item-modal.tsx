@@ -158,23 +158,55 @@ function BirthdayItemModal({
       router.refresh();
     }
   }
+
+  const initial = (birthday.name ?? "?").charAt(0).toUpperCase();
+
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={(e: React.MouseEvent) => {
         e.stopPropagation();
         onClose();
       }}
     >
       <div
-        className="w-full max-w-2xl bg-background text-foreground rounded-2xl shadow-xl p-6"
+        className="w-full sm:max-w-md bg-card rounded-t-2xl sm:rounded-2xl shadow-xl p-6 animate-slide-up"
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        <form onSubmit={handleSubmit} className="grid gap-4">
-          <div className="grid grid-cols-1 gap-1">
-            <label className="text-sm font-medium">Name</label>
+        {/* Modal header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center text-accent font-semibold text-sm shrink-0">
+            {initial}
+          </div>
+          <h2 className="text-lg font-semibold flex-1 truncate">
+            Edit Birthday
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted hover:text-foreground p-1 -mr-1 rounded-lg hover:bg-border/50 transition-colors"
+            aria-label="Close"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-muted">Name</label>
             <input
-              className="px-3 py-2 rounded border"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-label="name"
@@ -182,11 +214,11 @@ function BirthdayItemModal({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-1">
-            <label className="text-sm font-medium">Date</label>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-muted">Birthday</label>
             <input
               type="date"
-              className="px-3 py-2 rounded border"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-base"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               aria-label="date"
@@ -202,21 +234,20 @@ function BirthdayItemModal({
             }}
           />
 
-          <div className="flex justify-between items-center gap-2 pt-2">
-            <div>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={saving}
-                className={`px-3 py-2 rounded text-white bg-red-600 hover:bg-red-700 ${saving ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                Delete
-              </button>
-            </div>
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={saving}
+              className={`text-sm text-destructive hover:text-destructive-hover font-medium transition-colors ${saving ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
+              Delete birthday
+            </button>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="px-3 py-2 rounded bg-gray-200 dark:bg-zinc-700"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-muted hover:bg-border/50 transition-colors"
                 onClick={onClose}
               >
                 Cancel
@@ -224,7 +255,7 @@ function BirthdayItemModal({
               <button
                 type="submit"
                 disabled={saving}
-                className={`px-3 py-2 rounded bg-indigo-600 text-white ${saving ? "opacity-60 cursor-not-allowed" : "hover:bg-indigo-700"}`}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium bg-accent text-white ${saving ? "opacity-60 cursor-not-allowed" : "hover:bg-accent-hover active:scale-[0.98]"} transition-all`}
               >
                 {saving ? "Saving…" : "Save"}
               </button>

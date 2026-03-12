@@ -7,6 +7,21 @@ interface BirthdayItemProps {
   birthday: BirthdayPlainObject;
 }
 
+const MONTH_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 function BirthdayItem({ birthday }: BirthdayItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const initialDate =
@@ -30,22 +45,34 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
     setGroupNameState(updated.groupName ?? null);
   }
 
+  const initial = nameState.charAt(0).toUpperCase();
+  const dateLabel = `${MONTH_SHORT[dateState.getMonth()]} ${dateState.getUTCDate()}`;
+
   return (
     <li
-      className="flex justify-between items-center mb-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+      className="flex items-center gap-3 px-3 py-3 min-h-14 rounded-xl hover:bg-accent-subtle cursor-pointer transition-colors active:scale-[0.98]"
       onClick={() => setIsModalOpen(true)}
     >
-      <span className="block px-2 py-1 rounded">{`${nameState}`}</span>
-      <span className="flex items-center gap-2">
-        {groupNameState && (
-          <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-indigo-600/20 text-indigo-400">
-            {groupNameState}
-          </span>
-        )}
-        <span className="block px-2 py-1 rounded">
-          {`${dateState.getMonth() + 1}/${dateState.getUTCDate()}/${dateState.getFullYear()}`}
+      {/* Initial circle */}
+      <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center text-accent font-semibold text-sm shrink-0">
+        {initial}
+      </div>
+
+      {/* Name + group badge */}
+      <div className="flex-1 min-w-0">
+        <span className="font-medium text-foreground block truncate">
+          {nameState}
         </span>
+        {groupNameState && (
+          <span className="text-xs text-accent/70">{groupNameState}</span>
+        )}
+      </div>
+
+      {/* Date chip */}
+      <span className="text-xs font-medium text-muted bg-border/50 px-2.5 py-1 rounded-full whitespace-nowrap">
+        {dateLabel}
       </span>
+
       <BirthdayItemModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

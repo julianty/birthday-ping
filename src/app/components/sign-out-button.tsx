@@ -5,10 +5,10 @@ import React from "react";
 function SignOutButton() {
   return (
     <button
-      className="dark:bg-destructive hover:bg-destructive-hover text-foreground p-2 rounded-md"
+      className="text-sm text-muted hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-border/50"
       onClick={() => signOut()}
     >
-      Sign Out
+      Sign out
     </button>
   );
 }
