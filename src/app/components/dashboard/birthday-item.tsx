@@ -51,6 +51,9 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
     return monthLabel ? humanLabel : numericLabel;
   }, [monthState, dayState, yearState]);
 
+  const currentMonth = new Date().getMonth() + 1;
+  const isCurrentMonthBirthday = monthState === currentMonth;
+
   return (
     <li
       className="flex items-center gap-3 px-3 py-3 min-h-14 rounded-xl hover:bg-accent-subtle cursor-pointer transition-colors active:scale-[0.98]"
@@ -72,7 +75,13 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
       </div>
 
       {/* Date chip */}
-      <span className="text-xs font-medium text-muted bg-border/50 px-2.5 py-1 rounded-full whitespace-nowrap">
+      <span
+        className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+          isCurrentMonthBirthday
+            ? "text-success bg-success-subtle ring-1 ring-success-border"
+            : "text-muted bg-border/50"
+        }`}
+      >
         {dateLabel}
       </span>
 
