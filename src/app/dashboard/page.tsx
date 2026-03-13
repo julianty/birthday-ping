@@ -50,6 +50,7 @@ export default async function DashboardPage() {
     );
   }
 
+  // Need to create a plain object to pass to a client component
   const birthdaysPlainObject: BirthdayPlainObject[] = birthdays.map((bd) => ({
     _id: bd._id.toString(),
     name: bd.name,
