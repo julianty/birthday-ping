@@ -20,7 +20,7 @@ export default function Home() {
         </p>
 
         <Link
-          href="/register"
+          href="/login"
           className="px-8 py-3.5 rounded-xl bg-accent text-white font-semibold text-base shadow-lg shadow-accent/20 hover:bg-accent-hover active:scale-[0.97] transition-all"
         >
           Get started — it&apos;s free
