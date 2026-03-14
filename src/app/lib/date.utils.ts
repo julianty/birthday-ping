@@ -1,6 +1,93 @@
+import type { BirthdayPlainObject } from "@/app/schemas/birthday.schema";
+
 function parseOptionalInt(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === "") return undefined;
   return Number.parseInt(String(value), 10);
+}
+
+function isLeapYear(year: number) {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+
+function normalizeBirthdayDay(month: number, day: number, year: number) {
+  if (month === 2 && day === 29 && !isLeapYear(year)) return 28;
+  return day;
+}
+
+function toLocalBirthdayDate(year: number, month: number, day: number) {
+  const safeDay = normalizeBirthdayDay(month, day, year);
+  const date = new Date(year, month - 1, safeDay, 0, 0, 0, 0);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== safeDay
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+export function getNextBirthdayCountdownTarget(
+  birthdays: BirthdayPlainObject[],
+  now: Date = new Date(),
+): {
+  birthday: BirthdayPlainObject;
+  targetDate: Date;
+  tiedCount: number;
+} | null {
+  if (birthdays.length === 0) return null;
+
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+
+  let bestBirthday: BirthdayPlainObject | null = null;
+  let bestDate: Date | null = null;
+  let tiedCount = 0;
+
+  for (const birthday of birthdays) {
+    const thisYear = toLocalBirthdayDate(
+      todayStart.getFullYear(),
+      birthday.month,
+      birthday.day,
+    );
+    const nextYear = toLocalBirthdayDate(
+      todayStart.getFullYear() + 1,
+      birthday.month,
+      birthday.day,
+    );
+
+    if (!thisYear || !nextYear) continue;
+
+    const candidate = thisYear >= todayStart ? thisYear : nextYear;
+
+    if (!bestDate || candidate < bestDate) {
+      bestDate = candidate;
+      bestBirthday = birthday;
+      tiedCount = 1;
+      continue;
+    }
+
+    if (candidate.getTime() === bestDate.getTime()) {
+      tiedCount += 1;
+    }
+  }
+
+  if (!bestBirthday || !bestDate) return null;
+
+  return {
+    birthday: bestBirthday,
+    targetDate: bestDate,
+    tiedCount,
+  };
 }
 
 export function isValidBirthdayParts(

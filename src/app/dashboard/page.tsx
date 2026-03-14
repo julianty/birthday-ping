@@ -6,6 +6,7 @@ import { auth } from "../auth";
 import SubscriptionDisplay from "../components/dashboard/subscription-display";
 import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import SignInButton from "../components/sign-in-button";
+import NextBirthdayCountdown from "../components/dashboard/next-birthday-countdown";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -97,6 +98,7 @@ export default async function DashboardPage() {
       {/* Scrollable content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+          <NextBirthdayCountdown birthdays={birthdaysPlainObject} />
           <SubscriptionDisplay birthdays={birthdaysPlainObject} />
         </div>
       </main>
