@@ -8,7 +8,9 @@ interface BirthdaySelectionExportProps {
   birthdays: BirthdayPlainObject[];
   isOpen: boolean;
   onClose: () => void;
-  onContinue: (selectedIds: string[]) => void;
+  onContinue: (selectedIds: string[]) => Promise<void>;
+  isExporting: boolean;
+  errorMessage: string | null;
 }
 
 const MONTH_SHORT = [
@@ -36,6 +38,8 @@ function BirthdaySelectionExport({
   isOpen,
   onClose,
   onContinue,
+  isExporting,
+  errorMessage,
 }: BirthdaySelectionExportProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -101,13 +105,14 @@ function BirthdaySelectionExport({
   }
 
   function handleClose() {
+    if (isExporting) return;
     setSelectedIds(new Set());
     onClose();
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (selectedCount === 0) return;
-    onContinue(Array.from(selectedIds));
+    await onContinue(Array.from(selectedIds));
   }
 
   if (!isOpen) return null;
@@ -234,24 +239,29 @@ function BirthdaySelectionExport({
         )}
 
         <div className="mt-5 space-y-3">
-          <p className="text-xs text-muted">
-            Export download will be enabled in the next update.
-          </p>
+          {errorMessage && (
+            <p className="text-xs text-destructive">{errorMessage}</p>
+          )}
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={handleClose}
+              disabled={isExporting}
               className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-border/40 transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
-              disabled={selectedCount === 0 || sortedBirthdays.length === 0}
+              disabled={
+                selectedCount === 0 ||
+                sortedBirthdays.length === 0 ||
+                isExporting
+              }
               onClick={handleContinue}
               className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Continue
+              {isExporting ? "Exporting..." : "Export .ics"}
             </button>
           </div>
         </div>

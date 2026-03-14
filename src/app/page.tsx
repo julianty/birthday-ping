@@ -29,7 +29,7 @@ export default function Home() {
 
       {/* Feature cards */}
       <section className="max-w-3xl mx-auto w-full px-6 pb-20">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <FeatureCard
             emoji="📬"
             title="Monthly Digests"
@@ -45,6 +45,11 @@ export default function Home() {
             title="Quick Add"
             description="Add a birthday in seconds. No clutter, no calendar apps."
           />
+          <FeatureCard
+            emoji="📅"
+            title="Calendar .ics Exports"
+            description="Export selected birthdays to an .ics file and import into your favorite calendar."
+          />
         </div>
 
         <div className="mt-12 text-center">
@@ -53,7 +58,6 @@ export default function Home() {
           </h3>
           <div className="flex flex-wrap justify-center gap-2">
             {[
-              "Calendar .ics exports",
               "Shared calendars",
               "Google contacts import",
               "SMS day-of reminders",
