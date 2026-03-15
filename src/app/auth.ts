@@ -11,7 +11,9 @@ import { clientPromise } from "./lib/db";
 import { syncAccountTokens } from "./lib/auth-helpers";
 
 export const config = {
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: process.env.MONGO_DB_NAME || "test",
+  }),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
