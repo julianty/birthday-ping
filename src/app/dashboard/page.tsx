@@ -8,6 +8,7 @@ import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import SignInButton from "../components/sign-in-button";
 import NextBirthdayCountdown from "../components/dashboard/next-birthday-countdown";
 import ExportBirthdaysButton from "../components/dashboard/export-birthdays-button";
+import ImportBirthdaysButton from "../components/dashboard/import-birthdays-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -99,7 +100,8 @@ export default async function DashboardPage() {
       {/* Scrollable content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-end gap-2">
+            <ImportBirthdaysButton />
             <ExportBirthdaysButton birthdays={birthdaysPlainObject} />
           </div>
           <NextBirthdayCountdown birthdays={birthdaysPlainObject} />

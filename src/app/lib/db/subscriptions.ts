@@ -76,6 +76,47 @@ export async function addSubscription(
   }
 }
 
+export async function addSubscriptionsBulk(
+  userEmail: string,
+  entries: Array<{
+    birthdayData: Omit<CreateBirthday, "createdBy">;
+    groupId?: string;
+  }>,
+) {
+  if (entries.length === 0) return 0;
+
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGO_DB_NAME || "test");
+
+  const users = db.collection<UserDB>("users");
+  const userDB = await users.findOne({ email: userEmail });
+  if (!userDB) {
+    throw new Error(`User with email ${userEmail} not found`);
+  }
+
+  const birthdays = db.collection("birthdays");
+  const subscriptions = db.collection("subscriptions");
+  let insertedCount = 0;
+
+  for (const entry of entries) {
+    const birthdayResult = await birthdays.insertOne({
+      ...entry.birthdayData,
+      createdBy: userDB._id,
+    });
+
+    const subscriptionData: CreateSubscription = {
+      userId: userDB._id,
+      birthdayId: birthdayResult.insertedId,
+      ...(entry.groupId ? { groupId: new ObjectId(entry.groupId) } : {}),
+    };
+    await subscriptions.insertOne(subscriptionData);
+
+    insertedCount += 1;
+  }
+
+  return insertedCount;
+}
+
 export async function getSubscriptionsByBirthdayMonth(month: number) {
   try {
     const client = await clientPromise;
