@@ -19,6 +19,10 @@ function formatDateValue(year: number, month: number, day: number) {
   return `${year}${pad(month)}${pad(day)}`;
 }
 
+function formatDateValueWithoutYear(month: number, day: number) {
+  return `--${pad(month)}${pad(day)}`;
+}
+
 function formatUtcDateTime(value: Date) {
   return (
     [
@@ -59,6 +63,7 @@ export function generateBirthdayIcs(
   ];
 
   for (const birthday of birthdays) {
+    const hasBirthYear = typeof birthday.year === "number";
     const eventYear = birthday.year ?? NO_YEAR_REFERENCE;
     const eventDay = normalizeBirthdayDay(
       birthday.month,
@@ -72,6 +77,15 @@ export function generateBirthdayIcs(
       `UID:birthday-${birthday._id}@birthday-ping.local`,
       `DTSTAMP:${dtstamp}`,
       `DTSTART;VALUE=DATE:${formatDateValue(eventYear, birthday.month, eventDay)}`,
+      `X-BIRTHDAYPING-HAS-BIRTH-YEAR:${hasBirthYear ? "1" : "0"}`,
+      ...(hasBirthYear
+        ? [`X-BIRTHDAYPING-BIRTH-YEAR:${birthday.year}`]
+        : [
+            `X-APPLE-OMIT-YEAR:${formatDateValueWithoutYear(
+              birthday.month,
+              birthday.day,
+            )}`,
+          ]),
       `SUMMARY:${summary}`,
       "RRULE:FREQ=YEARLY",
       "STATUS:CONFIRMED",

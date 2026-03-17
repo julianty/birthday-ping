@@ -48,6 +48,28 @@ function parseDateFromEvent(event: VEvent) {
   return { year, month, day };
 }
 
+function resolveBirthYear(event: VEvent, fallbackYear: number) {
+  const metadataHasYear = (event as Record<string, unknown>)[
+    "BIRTHDAYPING-HAS-BIRTH-YEAR"
+  ];
+  const metadataYear = (event as Record<string, unknown>)[
+    "BIRTHDAYPING-BIRTH-YEAR"
+  ];
+
+  if (metadataHasYear === "0" || metadataHasYear === 0) {
+    return undefined;
+  }
+
+  if (typeof metadataYear === "string") {
+    const parsed = Number.parseInt(metadataYear, 10);
+    if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 9999) {
+      return parsed;
+    }
+  }
+
+  return fallbackYear;
+}
+
 function normalizeBirthdayName(summary: string) {
   const trimmed = summary.trim();
   const patterns: Array<[RegExp, (match: RegExpMatchArray) => string]> = [
@@ -170,7 +192,7 @@ export function parseBirthdayIcsImport(
       normalizedName: nameInfo.normalizedName,
       month: parsedDate.month,
       day: parsedDate.day,
-      year: parsedDate.year,
+      year: resolveBirthYear(event, parsedDate.year),
       confidence: toConfidence(totalScore),
       score: totalScore,
       warnings: eventWarnings,
