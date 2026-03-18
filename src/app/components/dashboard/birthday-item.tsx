@@ -6,6 +6,9 @@ import { formatBirthdayLabel } from "@/app/lib/date.utils";
 
 interface BirthdayItemProps {
   birthday: BirthdayPlainObject;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onSelectChange?: (birthdayId: string, isSelected: boolean) => void;
 }
 
 const MONTH_SHORT = [
@@ -23,7 +26,12 @@ const MONTH_SHORT = [
   "Dec",
 ];
 
-function BirthdayItem({ birthday }: BirthdayItemProps) {
+function BirthdayItem({ 
+  birthday, 
+  isSelectionMode, 
+  isSelected, 
+  onSelectChange 
+}: BirthdayItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nameState, setNameState] = useState(birthday.name);
   const [monthState, setMonthState] = useState(birthday.month);
@@ -57,8 +65,28 @@ function BirthdayItem({ birthday }: BirthdayItemProps) {
   return (
     <li
       className="flex items-center gap-3 px-3 py-3 min-h-14 rounded-xl hover:bg-accent-subtle cursor-pointer transition-colors active:scale-[0.98]"
-      onClick={() => setIsModalOpen(true)}
+      onClick={() => {
+        if (isSelectionMode && onSelectChange) {
+          onSelectChange(birthday._id, !isSelected);
+        } else {
+          setIsModalOpen(true);
+        }
+      }}
     >
+      {/* Checkbox (selection mode) */}
+      {isSelectionMode && (
+        <input
+          type="checkbox"
+          checked={isSelected ?? false}
+          onChange={(e) => {
+            e.stopPropagation();
+            onSelectChange?.(birthday._id, e.target.checked);
+          }}
+          className="w-5 h-5 rounded border-2 border-accent accent-accent shrink-0 cursor-pointer"
+          aria-label={`Select ${nameState}`}
+        />
+      )}
+
       {/* Initial circle */}
       <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center text-accent font-semibold text-sm shrink-0">
         {initial}

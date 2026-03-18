@@ -1,14 +1,13 @@
-import AddReminderForm from "@/app/components/dashboard/add-reminder-form";
 import { getReminders, BirthdayWithGroup } from "@/app/lib/db";
 import Image from "next/image";
 import SignOutButton from "../components/sign-out-button";
 import { auth } from "../auth";
-import SubscriptionDisplay from "../components/dashboard/subscription-display";
 import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import SignInButton from "../components/sign-in-button";
 import NextBirthdayCountdown from "../components/dashboard/next-birthday-countdown";
 import ExportBirthdaysButton from "../components/dashboard/export-birthdays-button";
 import ImportBirthdaysButton from "../components/dashboard/import-birthdays-button";
+import DashboardContent from "../components/dashboard/dashboard-content";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -105,12 +104,12 @@ export default async function DashboardPage() {
             <ExportBirthdaysButton birthdays={birthdaysPlainObject} />
           </div>
           <NextBirthdayCountdown birthdays={birthdaysPlainObject} />
-          <SubscriptionDisplay birthdays={birthdaysPlainObject} />
+          <DashboardContent
+            birthdays={birthdaysPlainObject}
+            birthdayCount={birthdays.length}
+          />
         </div>
       </main>
-
-      {/* FAB + Add Reminder modal */}
-      <AddReminderForm key={`v=${birthdays.length}`} />
     </div>
   );
 }

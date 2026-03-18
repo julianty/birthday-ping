@@ -6,7 +6,11 @@ import { useSession } from "next-auth/react";
 import GroupSelect from "./group-select";
 import { createPortal } from "react-dom";
 
-function AddReminderForm() {
+interface AddReminderFormProps {
+  isSelectionMode?: boolean;
+}
+
+function AddReminderForm({ isSelectionMode }: AddReminderFormProps) {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | undefined>("");
@@ -34,7 +38,7 @@ function AddReminderForm() {
   return (
     <>
       {/* Floating Action Button */}
-      <button
+      {!isSelectionMode && <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-accent text-white shadow-lg shadow-accent/25 hover:bg-accent-hover active:scale-95 transition-all flex items-center justify-center"
         aria-label="Add reminder"
@@ -51,7 +55,7 @@ function AddReminderForm() {
         >
           <path d="M12 5v14M5 12h14" />
         </svg>
-      </button>
+      </button>}
 
       {/* Bottom-sheet modal */}
       {isOpen &&
