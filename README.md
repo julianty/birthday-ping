@@ -1,8 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) birthday reminder app with Google sign-in, MongoDB storage, and email delivery through Resend.
 
 ## Getting Started
 
-First, run the development server:
+First, create a `.env.local` file with the required configuration:
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/callback/google
+MONGO_DB_CONNECTION_STRING=
+MONGO_DB_NAME=
+NEXTAUTH_SECRET=
+NEXTAUTH_BASEURL=http://localhost:3000
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+```
+
+Then run the development server:
 
 ```bash
 npm run dev
@@ -16,9 +30,19 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Google OAuth is used for authentication only. Email sending is handled through Resend, so `RESEND_FROM_EMAIL` must be a sender address that is valid for your Resend account.
+
+Useful commands:
+
+```bash
+npm run dev
+npm run build
+npm run lint
+```
+
+Main app code lives in `src/app`, with email logic in `src/app/lib/email.ts` and authenticated dashboard pages under `src/app/dashboard`.
 
 ## Learn More
 

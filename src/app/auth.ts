@@ -8,7 +8,6 @@ import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { clientPromise } from "./lib/db";
-import { syncAccountTokens } from "./lib/auth-helpers";
 
 export const config = {
   adapter: MongoDBAdapter(clientPromise, {
@@ -20,22 +19,12 @@ export const config = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope:
-            "openid email profile https://www.googleapis.com/auth/gmail.send",
-          access_type: "offline",
-          prompt: "select_account consent", // Force both account selection AND consent
-          include_granted_scopes: true,
+          scope: "openid email profile",
+          prompt: "select_account",
         },
       },
     }),
   ],
-  events: {
-    signIn: async ({ user, account }) => {
-      if (account && user.email) {
-        await syncAccountTokens(user.email, account);
-      }
-    },
-  },
   secret: process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthOptions;
 

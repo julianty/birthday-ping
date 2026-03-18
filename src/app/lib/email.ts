@@ -5,14 +5,15 @@ import { auth } from "@/app/auth";
 import { formatBirthdayLabel } from "./date.utils";
 import {
   getMonthBirthdaySubscriptionsGroupedByUser,
-  getRefreshToken,
   getUserBirthdaysByDate,
   getUserIdFromEmail,
   SubscriptionShape,
   updateLastSentAt,
   UserGroupedSubscriptions,
 } from "./db";
-import { google } from "googleapis";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function SendEmail({
   to,
@@ -23,92 +24,29 @@ async function SendEmail({
   subject: string;
   text: string;
 }) {
-  const session = await auth();
-  if (!session?.user?.email) {
-    throw new Error("Not authenticated");
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("Missing RESEND_API_KEY");
   }
-
-  // Load environment variables with validation
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
-
-  if (!clientId || !clientSecret || !redirectUri) {
-    throw new Error("Missing Google OAuth configuration");
+  if (!from) {
+    throw new Error("Missing RESEND_FROM_EMAIL");
   }
-
-  // Get user data with proper error handling
-  const uid = await getUserIdFromEmail(session.user.email);
-  if (!uid) {
-    throw new Error(`No user ID found for email: ${session.user.email}`);
-  }
-
-  const refreshToken = await getRefreshToken(uid);
-  if (!refreshToken) {
-    console.error(`❌ No refresh token found for user ${session.user.email}`);
-    console.error(
-      "User needs to sign out and sign in again to grant fresh tokens",
-    );
-    throw new Error(
-      "No refresh token available - please sign out and sign in again",
-    );
-  }
-
-  console.log("🔍 Token info:", {
-    userId: uid.toString(),
-    userEmail: session.user.email,
-    tokenLength: refreshToken.length,
-    tokenPrefix: refreshToken.substring(0, 10),
-  });
-
-  // Create oAuth client
-  const oAuth2Client = new google.auth.OAuth2(
-    clientId,
-    clientSecret,
-    redirectUri,
-  );
-  oAuth2Client.setCredentials({ refresh_token: refreshToken });
-
-  // Build message
-  const messageParts = [
-    `To: ${to}`,
-    "Content-Type: text/plain; charset=utf-8",
-    `Subject: ${subject}`,
-    "",
-    text,
-  ];
-  const message = messageParts.join("\n");
-  const encodedMessage = Buffer.from(message).toString("base64url");
 
   try {
-    await oAuth2Client.getAccessToken();
-
-    const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
-
-    console.log("📧 Sending email to:", to);
-    await gmail.users.messages.send({
-      userId: "me",
-      requestBody: {
-        raw: encodedMessage,
-      },
-    });
-    console.log("✅ Email sent successfully");
-  } catch (error) {
-    console.error("❌ SendEmail error:", {
-      errorType: error?.constructor?.name,
-      errorMessage: error instanceof Error ? error.message : undefined,
-      userEmail: session.user.email,
-      fullError: error,
+    const { error } = await resend.emails.send({
+      from,
+      to,
+      subject,
+      text,
     });
 
-    if (error instanceof Error && error.message.includes("invalid_grant")) {
-      console.error("🚨 Invalid grant - token may be expired or revoked");
-      throw new Error(
-        "Authentication failed - please sign out and sign in again",
-      );
+    if (error) {
+      throw new Error(error.message || "Resend failed to send email");
     }
-
-    throw error;
+  } catch (error) {
+    throw error instanceof Error
+      ? error
+      : new Error("Unknown email sending error");
   }
 }
 
@@ -123,7 +61,7 @@ export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
       .map((r) => `${r.name}: ${formatBirthdayLabel(r.month, r.day, r.year)}`)
       .join("\n"),
   };
-  SendEmail(body);
+  await SendEmail(body);
 }
 
 export async function sendMonthlyEmail() {
@@ -155,7 +93,7 @@ export async function sendMonthlyEmail() {
         .join("\n"),
     };
 
-    SendEmail(body);
+    await SendEmail(body);
     // Update subscription lastSentAt
     await updateLastSentAt(doc.subscriptions.map((sub) => sub.subscriptionId));
   }
@@ -181,7 +119,7 @@ export async function sendDailyEmail(userEmail: string) {
       .join("\n"),
   };
 
-  SendEmail(body);
+  await SendEmail(body);
 
   // Send email to user
   // Update lastSent at

@@ -8,6 +8,8 @@ import NextBirthdayCountdown from "../components/dashboard/next-birthday-countdo
 import ExportBirthdaysButton from "../components/dashboard/export-birthdays-button";
 import ImportBirthdaysButton from "../components/dashboard/import-birthdays-button";
 import DashboardContent from "../components/dashboard/dashboard-content";
+import TestDailyEmailButton from "../components/test-daily-email";
+import TestMonthlyEmailButton from "../components/test-monthly-email";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -103,6 +105,33 @@ export default async function DashboardPage() {
             <ImportBirthdaysButton />
             <ExportBirthdaysButton birthdays={birthdaysPlainObject} />
           </div>
+
+          <section className="mb-6 rounded-2xl border border-amber-300/80 bg-amber-50/90 p-4 shadow-sm dark:border-amber-800 dark:bg-amber-950/30">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800 dark:text-amber-300">
+                  Admin Debug Tools
+                </p>
+                <h2 className="text-lg font-semibold text-amber-950 dark:text-amber-50">
+                  Manual email triggers
+                </h2>
+                <p className="max-w-xl text-sm text-amber-900/80 dark:text-amber-100/75">
+                  These actions are intended for debugging and delivery checks.
+                  They bypass normal reminder timing and should only be used for
+                  manual verification.
+                </p>
+              </div>
+              <div className="rounded-full border border-amber-300 bg-white/80 px-3 py-1 text-xs font-medium text-amber-900 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100">
+                Visible for admin testing
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <TestDailyEmailButton userEmail={session.user.email} />
+              <TestMonthlyEmailButton />
+            </div>
+          </section>
+
           <NextBirthdayCountdown birthdays={birthdaysPlainObject} />
           <DashboardContent
             birthdays={birthdaysPlainObject}
