@@ -43,6 +43,27 @@ function SubscriptionDisplay({
     setShowDeleteConfirm(true);
   };
 
+  const handleMoveToGroup = async (groupId: string | null) => {
+    const birthdayIdsArray = Array.from(selectedIds);
+    try {
+      const response = await fetch("/api/subscriptions/bulk-assign-group", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ birthdayIds: birthdayIdsArray, groupId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to move birthdays");
+      }
+
+      handleCancelSelection();
+      window.location.reload();
+    } catch (error) {
+      console.error("Move to group error:", error);
+      alert("Failed to move birthdays to group");
+    }
+  };
+
   const handleConfirmDelete = async () => {
     const birthdayIdsArray = Array.from(selectedIds);
     try {
@@ -168,6 +189,7 @@ function SubscriptionDisplay({
         <BulkActionBar
           selectedCount={selectedIds.size}
           onDelete={handleDeleteClick}
+          onMoveToGroup={handleMoveToGroup}
           onCancel={handleCancelSelection}
         />
       )}
