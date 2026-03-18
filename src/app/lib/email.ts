@@ -1,28 +1,37 @@
 "use server";
 
+import { type ReactElement, createElement } from "react";
+import { render } from "@react-email/render";
 import { BirthdayPlainObject } from "../schemas/birthday.schema";
 import { auth } from "@/app/auth";
-import { formatBirthdayLabel } from "./date.utils";
 import {
   getMonthBirthdaySubscriptionsGroupedByUser,
   getUserBirthdaysByDate,
   getUserIdFromEmail,
-  SubscriptionShape,
   updateLastSentAt,
   UserGroupedSubscriptions,
 } from "./db";
 import { Resend } from "resend";
+import DailyEmailTemplate from "../components/emails/daily-email-template";
+import MonthlyEmailTemplate from "../components/emails/monthly-email-template";
+import ReminderSummaryTemplate from "../components/emails/reminder-summary-template";
+import {
+  buildDailyEmailPayload,
+  buildMonthlyEmailPayload,
+  buildReminderSummaryPayload,
+  type DailyBirthdayRecord,
+} from "./email.payloads";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function SendEmail({
   to,
   subject,
-  text,
+  react,
 }: {
   to: string;
   subject: string;
-  text: string;
+  react: ReactElement;
 }) {
   const from = process.env.RESEND_FROM_EMAIL;
   if (!process.env.RESEND_API_KEY) {
@@ -32,11 +41,15 @@ async function SendEmail({
     throw new Error("Missing RESEND_FROM_EMAIL");
   }
 
+  const html = await render(react);
+  const text = await render(react, { plainText: true });
+
   try {
     const { error } = await resend.emails.send({
       from,
       to,
       subject,
+      html,
       text,
     });
 
@@ -54,20 +67,20 @@ export async function sendReminderEmail(birthdays: BirthdayPlainObject[]) {
   const session = await auth();
   if (!session?.user?.email) throw new Error("No user email");
 
-  const body = {
-    to: session.user.email,
-    subject: "Here are all of the birthdays associated with your account!",
-    text: birthdays
-      .map((r) => `${r.name}: ${formatBirthdayLabel(r.month, r.day, r.year)}`)
-      .join("\n"),
-  };
-  await SendEmail(body);
+  const { to, subject, templateProps } = buildReminderSummaryPayload(
+    session.user.email,
+    birthdays,
+  );
+  await SendEmail({
+    to,
+    subject,
+    react: createElement(ReminderSummaryTemplate, templateProps),
+  });
 }
 
 export async function sendMonthlyEmail() {
   const currentMonth = new Date().getMonth() + 1;
 
-  // Aggregate subscriptions per user
   const subscriptionsByUser = (await getMonthBirthdaySubscriptionsGroupedByUser(
     currentMonth,
   )) as unknown as UserGroupedSubscriptions[];
@@ -76,25 +89,14 @@ export async function sendMonthlyEmail() {
       "Could not query aggregation pipeline getMonthBirthdaySubscriptionsGroupedByUser",
     );
   }
-  // Call send monthly email api for each user
-  for (const doc of subscriptionsByUser) {
-    const body = {
-      to: doc.userEmail,
-      subject: `Birthdays for the month of ${doc.filteredMonth}`,
-      text: doc.subscriptions
-        .map((subscription: SubscriptionShape) => {
-          const bday = subscription.birthday;
-          return `${bday.name}: ${formatBirthdayLabel(
-            bday.month,
-            bday.day,
-            bday.year,
-          )}`;
-        })
-        .join("\n"),
-    };
 
-    await SendEmail(body);
-    // Update subscription lastSentAt
+  for (const doc of subscriptionsByUser) {
+    const { to, subject, templateProps } = buildMonthlyEmailPayload(doc);
+    await SendEmail({
+      to,
+      subject,
+      react: createElement(MonthlyEmailTemplate, templateProps),
+    });
     await updateLastSentAt(doc.subscriptions.map((sub) => sub.subscriptionId));
   }
 }
@@ -105,24 +107,20 @@ export async function sendDailyEmail(userEmail: string) {
     throw new Error("Could not fetch userId from email");
   }
 
-  // Find all subscriptions that have a birthday landing today
   const todayDate = new Date();
   const birthdays = await getUserBirthdaysByDate(uid, todayDate);
 
-  const body = {
-    to: userEmail,
-    subject: `You have ${birthdays.length} birthday subscriptions active today`,
-    text: birthdays
-      .map(
-        (bd) => `${bd.birthday.name}: ${bd.birthday.month}/${bd.birthday.day}`,
-      )
-      .join("\n"),
-  };
+  const { to, subject, templateProps } = buildDailyEmailPayload(
+    userEmail,
+    birthdays as unknown as DailyBirthdayRecord[],
+    todayDate,
+  );
+  await SendEmail({
+    to,
+    subject,
+    react: createElement(DailyEmailTemplate, templateProps),
+  });
 
-  await SendEmail(body);
-
-  // Send email to user
-  // Update lastSent at
   const subscriptionIds = birthdays.map((bd) => bd._id);
   await updateLastSentAt(subscriptionIds);
 }
