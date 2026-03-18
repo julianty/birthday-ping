@@ -51,7 +51,8 @@ export default function DeleteConfirmationModal({
             Delete {selectedCount} birthday{selectedCount !== 1 ? "ies" : ""}?
           </h2>
           <p className="text-sm text-muted">
-            This action cannot be undone. The following will be permanently deleted:
+            This action cannot be undone. The following will be permanently
+            deleted:
           </p>
         </div>
 

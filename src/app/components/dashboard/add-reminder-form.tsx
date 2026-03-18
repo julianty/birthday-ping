@@ -38,24 +38,26 @@ function AddReminderForm({ isSelectionMode }: AddReminderFormProps) {
   return (
     <>
       {/* Floating Action Button */}
-      {!isSelectionMode && <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-accent text-white shadow-lg shadow-accent/25 hover:bg-accent-hover active:scale-95 transition-all flex items-center justify-center"
-        aria-label="Add reminder"
-      >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {!isSelectionMode && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-accent text-white shadow-lg shadow-accent/25 hover:bg-accent-hover active:scale-95 transition-all flex items-center justify-center"
+          aria-label="Add reminder"
         >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </button>}
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      )}
 
       {/* Bottom-sheet modal */}
       {isOpen &&

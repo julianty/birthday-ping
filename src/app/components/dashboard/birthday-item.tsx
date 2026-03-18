@@ -26,11 +26,11 @@ const MONTH_SHORT = [
   "Dec",
 ];
 
-function BirthdayItem({ 
-  birthday, 
-  isSelectionMode, 
-  isSelected, 
-  onSelectChange 
+function BirthdayItem({
+  birthday,
+  isSelectionMode,
+  isSelected,
+  onSelectChange,
 }: BirthdayItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nameState, setNameState] = useState(birthday.name);

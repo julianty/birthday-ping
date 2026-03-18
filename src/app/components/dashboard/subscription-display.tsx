@@ -10,22 +10,28 @@ interface SubscriptionDisplayProps {
   onSelectionModeChange?: (isSelectionMode: boolean) => void;
 }
 
-function SubscriptionDisplay({ birthdays, onSelectionModeChange }: SubscriptionDisplayProps) {
+function SubscriptionDisplay({
+  birthdays,
+  onSelectionModeChange,
+}: SubscriptionDisplayProps) {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleSelectChange = useCallback((birthdayId: string, isSelected: boolean) => {
-    setSelectedIds((prev) => {
-      const updated = new Set(prev);
-      if (isSelected) {
-        updated.add(birthdayId);
-      } else {
-        updated.delete(birthdayId);
-      }
-      return updated;
-    });
-  }, []);
+  const handleSelectChange = useCallback(
+    (birthdayId: string, isSelected: boolean) => {
+      setSelectedIds((prev) => {
+        const updated = new Set(prev);
+        if (isSelected) {
+          updated.add(birthdayId);
+        } else {
+          updated.delete(birthdayId);
+        }
+        return updated;
+      });
+    },
+    [],
+  );
 
   const handleCancelSelection = useCallback(() => {
     setIsSelectionMode(false);
@@ -52,7 +58,7 @@ function SubscriptionDisplay({ birthdays, onSelectionModeChange }: SubscriptionD
 
       setShowDeleteConfirm(false);
       handleCancelSelection();
-      
+
       // Reload the page to refresh the list
       window.location.reload();
     } catch (error) {

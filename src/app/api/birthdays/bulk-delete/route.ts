@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userBirthdayIds = new Set(reminders.map(b => b._id.toString()));
+    const userBirthdayIds = new Set(reminders.map((b) => b._id.toString()));
     const requestedIds = parsed.data.birthdayIds;
 
     // Only delete birthdays that belong to the user
-    const validIds = requestedIds.filter(id => userBirthdayIds.has(id));
+    const validIds = requestedIds.filter((id) => userBirthdayIds.has(id));
 
     if (validIds.length === 0) {
       return NextResponse.json(
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     console.error("Bulk delete error:", error);
     return NextResponse.json(
       { error: "Failed to delete birthdays" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
