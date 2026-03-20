@@ -1,0 +1,22 @@
+name: send-monthly-emails
+
+on:
+  schedule:
+    - cron: "0 9 1 * *" # monthly at 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  send_monthly:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger monthly digest job
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          JOB_SECRET: ${{ secrets.MONTHLY_JOB_SECRET }}
+        run: |
+          set -euo pipefail
+          curl -fS -X POST "${APP_URL}/api/jobs/send-monthly" \
+            -H "x-job-secret: ${JOB_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
