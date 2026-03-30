@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+      <section className="flex flex-1 flex-col items-center justify-center px-6 text-center my-12">
         <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-6">
           <span className="text-5xl">🎂</span>
         </div>
